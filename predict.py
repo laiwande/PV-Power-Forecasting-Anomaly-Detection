@@ -12,15 +12,15 @@ import torch
 import torch.nn as nn
 from sklearn.preprocessing import StandardScaler
 
+# 特征工程模块(扩展特征列与构造函数)
+from features import build_features, FEATURE_COLS
+
 # 基础目录(基于本文件位置,避免受运行时 CWD 影响)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, 'models')
 SCALER_PATH = os.path.join(MODEL_DIR, 'scaler.pkl')
 MODEL_PATH = os.path.join(MODEL_DIR, 'patchtst.pth')
 DATA_PATH = os.path.join(BASE_DIR, 'data', 'pv_dataset.csv')
-
-# 特征列顺序(与 train.py 一致:y 放第 0 列)
-FEATURE_COLS = ['y', 'temperature_2m', 'cloud_cover', 'shortwave_radiation', 'relative_humidity_2m']
 
 
 # ============ PatchTST 模型(与 train.py 定义一致)============
@@ -91,14 +91,17 @@ def predict_future(history_df):
         scalers = pickle.load(f)
     feature_scaler = scalers['feature_scaler']
     target_scaler = scalers['target_scaler']
+    # 向后兼容:若 scaler 中含 feature_cols 则用之,否则回退到 FEATURE_COLS 常量
+    feature_cols = scalers.get('feature_cols', FEATURE_COLS)
 
-    # 准备输入(列顺序与 train 一致)
-    data = history_df[FEATURE_COLS].values.astype(np.float32)
+    # ---- 特征工程:构造扩展特征(与 train 一致)----
+    df = build_features(history_df)
+    data = df[feature_cols].values.astype(np.float32)
     data_scaled = feature_scaler.transform(data)
 
     # 加载模型
     model = PatchTST(
-        n_features=5, seq_len=96, pred_len=24,
+        n_features=len(feature_cols), seq_len=96, pred_len=24,
         patch_len=16, stride=8, d_model=64, n_heads=4,
         num_layers=2, dropout=0.1,
     )
@@ -106,7 +109,7 @@ def predict_future(history_df):
     model.eval()
 
     with torch.no_grad():
-        x = torch.from_numpy(data_scaled).unsqueeze(0)  # (1, 96, 5)
+        x = torch.from_numpy(data_scaled).unsqueeze(0)  # (1, 96, n_features)
         pred = model(x).squeeze(0).numpy()  # (24,)
 
     # 用 target_scaler 反标准化

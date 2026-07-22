@@ -9,15 +9,15 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import StandardScaler
 
+# 特征工程模块(扩展特征列与构造函数)
+from features import build_features, FEATURE_COLS
+
 # 基础目录(基于本文件位置,避免受运行时 CWD 影响)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(BASE_DIR, 'data', 'pv_dataset.csv')
 MODEL_DIR = os.path.join(BASE_DIR, 'models')
 SCALER_PATH = os.path.join(MODEL_DIR, 'scaler.pkl')
 MODEL_PATH = os.path.join(MODEL_DIR, 'patchtst.pth')
-
-# 特征列顺序:y 放第 0 列,方便目标索引
-FEATURE_COLS = ['y', 'temperature_2m', 'cloud_cover', 'shortwave_radiation', 'relative_humidity_2m']
 
 
 # ============ PatchTST 模型 ============
@@ -126,7 +126,10 @@ def main():
     df = pd.read_csv(DATA_PATH)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df = df.sort_values('timestamp').reset_index(drop=True)
-    data = df[FEATURE_COLS].values.astype(np.float32)  # (n_samples, 5)
+
+    # ---- 特征工程:扩展为 16 维特征 ----
+    df = build_features(df)
+    data = df[FEATURE_COLS].values.astype(np.float32)  # (n_samples, n_features)
 
     # ---- 划分训练/验证集(按时间顺序,后 20% 作为验证集)----
     n_total = len(data)
@@ -144,11 +147,12 @@ def main():
     train_data = feature_scaler.transform(train_raw)
     val_data = feature_scaler.transform(val_raw)
 
-    # ---- 保存 scaler ----
+    # ---- 保存 scaler(含特征列清单,供推理时校验)----
     with open(SCALER_PATH, 'wb') as f:
         pickle.dump({
             'feature_scaler': feature_scaler,
             'target_scaler': target_scaler,
+            'feature_cols': FEATURE_COLS,
         }, f)
     print('scaler 已保存到', SCALER_PATH)
 
@@ -164,7 +168,7 @@ def main():
     # ---- 模型 ----
     device = torch.device('cpu')
     model = PatchTST(
-        n_features=5, seq_len=seq_len, pred_len=pred_len,
+        n_features=len(FEATURE_COLS), seq_len=seq_len, pred_len=pred_len,
         patch_len=16, stride=8, d_model=64, n_heads=4,
         num_layers=2, dropout=0.1,
     ).to(device)

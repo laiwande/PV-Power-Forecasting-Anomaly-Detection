@@ -23,6 +23,7 @@ if BASE_DIR not in sys.path:
 from predict import predict_future
 from anomaly import detect_anomalies
 from llm_analysis import generate_diagnosis
+from dispatch import recommend_action
 
 # 采样与模型参数
 SEQ_LEN = 96   # 历史窗口长度(96 小时)
@@ -321,6 +322,7 @@ LUCIDE_ICONS = {
     'sun-medium': '<circle cx="12" cy="12" r="4"/><path d="M12 3v1"/><path d="M12 20v1"/><path d="M3 12h1"/><path d="M20 12h1"/><path d="m18.364 5.636-.707.707"/><path d="m6.343 17.657-.707.707"/><path d="m18.364 18.364-.707-.707"/><path d="m6.343 6.343-.707-.707"/>',
     'droplets': '<path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/>',
     'bot': '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
+    'eye': '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
 }
 
 
@@ -392,6 +394,107 @@ def render_diagnosis_card(content):
     <div class="diagnosis-card">
         <div class="header">{lucide_icon("bot", color="#4994C4")} InternLM 智能诊断报告</div>
         {content}
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def render_dispatch_card(dispatch_info):
+    """渲染运维决策卡片(青花瓷风格)。
+
+    卡片包含动作名称、动作系数、紧急程度(带颜色标签)与决策依据。
+    样式:白底 #FFFFFF + 左侧 4px 靛蓝竖线 + 孔雀蓝细边框 #A8C8DC,圆角 4px。
+    """
+    if not dispatch_info:
+        return
+
+    action_name = dispatch_info.get('action_name', '')
+    coefficient = dispatch_info.get('coefficient', '')
+    urgency = dispatch_info.get('urgency', '')
+    rationale = dispatch_info.get('rationale', '')
+
+    # 紧急程度颜色映射:低=孔雀蓝、中=琥珀、高=橙、紧急=红
+    urgency_color_map = {
+        '低': '#4994C4',
+        '中': '#f59e0b',
+        '高': '#f97316',
+        '紧急': '#ef4444',
+    }
+    urgency_color = urgency_color_map.get(urgency, '#4994C4')
+
+    # 系数展示(转为字符串)
+    coef_str = f'{coefficient}' if coefficient != '' else ''
+
+    st.markdown(f"""
+    <div style="
+        background:#FFFFFF;
+        border:1px solid #A8C8DC;
+        border-left:4px solid #065279;
+        border-radius:4px;
+        padding:20px 24px;
+        box-shadow:0 1px 3px rgba(6,82,121,0.06);
+        margin-bottom:16px;
+    ">
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+            margin-bottom:14px;
+            padding-bottom:10px;
+            border-bottom:1px solid #A8C8DC;
+        ">
+            <span style="display:inline-flex;align-items:center;color:#4994C4;">
+                {lucide_icon('alert-octagon', size=20, color='#4994C4')}
+            </span>
+            <span style="
+                font-family:'Noto Serif SC', serif;
+                font-size:16px;
+                font-weight:700;
+                color:#065279;
+                letter-spacing:0.5px;
+            ">运维决策建议</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
+            <div style="flex:0 0 auto;">
+                <div style="font-size:11px;color:#7A8C95;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">动作名称</div>
+                <div style="
+                    font-family:'Noto Serif SC', serif;
+                    font-size:26px;
+                    font-weight:700;
+                    color:#065279;
+                    line-height:1.2;
+                ">{action_name}</div>
+            </div>
+            <div style="flex:0 0 auto;">
+                <div style="font-size:11px;color:#7A8C95;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">动作系数</div>
+                <div style="
+                    font-family:'Noto Serif SC', serif;
+                    font-size:22px;
+                    font-weight:700;
+                    color:#4994C4;
+                ">{coef_str}</div>
+            </div>
+            <div style="flex:0 0 auto;">
+                <div style="font-size:11px;color:#7A8C95;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">紧急程度</div>
+                <span style="
+                    display:inline-block;
+                    padding:4px 14px;
+                    border-radius:12px;
+                    font-size:13px;
+                    font-weight:600;
+                    color:#FFFFFF;
+                    background:{urgency_color};
+                    border:1px solid {urgency_color};
+                ">{urgency}</span>
+            </div>
+        </div>
+        <div>
+            <div style="font-size:11px;color:#7A8C95;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">决策依据</div>
+            <div style="
+                font-size:14px;
+                color:#50616D;
+                line-height:1.8;
+            ">{rationale}</div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -564,12 +667,15 @@ def main():
     with st.spinner('Isolation Forest 异常检测中...'):
         anomaly_result = detect_anomalies(actual, predicted, contamination=contamination)
 
+    # 3.1 运维决策推荐(基于异常检测结果)
+    dispatch_info = recommend_action(anomaly_result)
+
     # 4. 天气数据
     weather_df = future[['temperature_2m', 'cloud_cover', 'shortwave_radiation', 'relative_humidity_2m']]
 
-    # 5. LLM 诊断
+    # 5. LLM 诊断(传入 dispatch_info,使报告包含运维动作建议)
     with st.spinner('InternLM 智能诊断生成中...'):
-        diagnosis = generate_diagnosis(anomaly_result, weather_df)
+        diagnosis = generate_diagnosis(anomaly_result, weather_df, dispatch_info=dispatch_info)
 
     # ===== 关键指标概览 =====
     anomaly_indices = anomaly_result['anomaly_indices']
@@ -590,6 +696,10 @@ def main():
         render_metric_card('MAE', f'{mae:.4f}', '', 'info', 'activity')
     with col5:
         render_metric_card('检测敏感度', f'{contamination:.2f}', '', 'warning', 'sliders-horizontal')
+
+    # ===== 运维决策建议卡片 =====
+    render_section_title('alert-octagon', '运维决策建议', '智能推荐')
+    render_dispatch_card(dispatch_info)
 
     # ===== 模块 1: 功率预测曲线 =====
     render_section_title('zap', '功率预测曲线', '历史 96h + 预测 24h')

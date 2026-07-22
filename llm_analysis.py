@@ -117,14 +117,33 @@ def _classify_severity(n_anomalies, anomaly_ratio):
     return '重度'
 
 
-def _build_prompt(info, weather, severity):
-    """构造发送给 InternLM 的诊断 prompt。"""
+def _build_prompt(info, weather, severity, dispatch_info=None):
+    """构造发送给 InternLM 的诊断 prompt。
+
+    Args:
+        info: 异常统计信息 dict。
+        weather: 天气信息 dict。
+        severity: 严重程度文本。
+        dispatch_info: 运维决策信息 dict(可选),含 action_name/coefficient/urgency/rationale。
+            为 None 时不附加运维动作段落,保持向后兼容。
+    """
     n_anomalies = info['n_anomalies']
     ratio = info['anomaly_ratio']
     temp = weather['temperature']
     cloud = weather['cloud_cover']
     rad = weather['shortwave_radiation']
     hum = weather['humidity']
+
+    # 运维动作段落(dispatch_info 为 None 时不附加,保持向后兼容)
+    dispatch_section = ""
+    if dispatch_info:
+        dispatch_section = (
+            f"\n【建议运维动作】\n"
+            f"- 动作名称: {dispatch_info.get('action_name', '')}\n"
+            f"- 动作系数: {dispatch_info.get('coefficient', '')}\n"
+            f"- 紧急程度: {dispatch_info.get('urgency', '')}\n"
+            f"- 决策依据: {dispatch_info.get('rationale', '')}\n"
+        )
 
     prompt = (
         f"你是光伏电站运维专家。请根据以下光伏电站运行数据,生成一份中文异常诊断报告。\n\n"
@@ -139,7 +158,8 @@ def _build_prompt(info, weather, severity):
         f"- 2米高度气温: {temp:.1f}°C\n"
         f"- 云量: {cloud:.1f}%\n"
         f"- 短波太阳辐射: {rad:.1f} W/m²\n"
-        f"- 相对湿度: {hum:.1f}%\n\n"
+        f"- 相对湿度: {hum:.1f}%\n"
+        f"{dispatch_section}\n"
         f"【要求】\n"
         f"1. 分析异常可能的原因(结合天气因素:短波辐射、云量、温度、湿度)\n"
         f"2. 判断异常属于气象条件引起的正常波动,还是可能的设备异常风险\n"
@@ -235,7 +255,7 @@ def _mock_diagnosis(info, weather, severity):
     return '\n'.join(lines)
 
 
-def generate_diagnosis(anomaly_info, weather_info):
+def generate_diagnosis(anomaly_info, weather_info, dispatch_info=None):
     """根据异常信息与天气信息生成中文诊断报告。
 
     优先调用 InternLM API;若 API 不可用则回退到 mock 实现。
@@ -254,6 +274,8 @@ def generate_diagnosis(anomaly_info, weather_info):
             - cloud_cover: 云量(%)
             - shortwave_radiation: 短波辐射(W/m²)
             - humidity / relative_humidity_2m: 相对湿度(%)
+        dispatch_info: 运维决策信息 dict(可选),含 action_name/coefficient/urgency/rationale。
+            为 None 时 prompt 不附加运维动作段落,保持向后兼容。
 
     Returns:
         str: 中文诊断文本。
@@ -263,7 +285,7 @@ def generate_diagnosis(anomaly_info, weather_info):
     severity = _classify_severity(info['n_anomalies'], info['anomaly_ratio'])
 
     # 构造 prompt 并调用 InternLM API
-    prompt = _build_prompt(info, weather, severity)
+    prompt = _build_prompt(info, weather, severity, dispatch_info=dispatch_info)
     diagnosis = _call_intern_api(prompt)
 
     # API 调用失败则回退到 mock
