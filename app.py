@@ -29,168 +29,136 @@ SEQ_LEN = 96   # 历史窗口长度(96 小时)
 PRED_LEN = 24  # 预测长度(24 小时)
 DATA_PATH = os.path.join(BASE_DIR, 'data', 'pv_dataset.csv')
 
-# ===== 主题配色(太阳能科技风)=====
+# ===== 主题配色(极简白色风,参考 skillsmp.com)=====
 THEME = {
-    'bg': '#0a0e1a',           # 深空蓝背景
-    'card_bg': '#141b2d',      # 卡片背景
-    'card_border': '#1f2940',  # 卡片边框
-    'primary': '#f59e0b',      # 太阳能金
+    'bg': '#ffffff',           # 纯白背景
+    'card_bg': '#ffffff',      # 卡片背景(白底)
+    'card_border': '#e5e7eb',  # 卡片细边框(gray-200)
+    'primary': '#f59e0b',      # 太阳能金(点缀色)
     'primary_light': '#fbbf24', # 浅琥珀
-    'secondary': '#3b82f6',    # 科技蓝
+    'secondary': '#3b82f6',    # 蓝色(历史功率)
     'success': '#10b981',      # 翠绿(实际功率)
     'danger': '#ef4444',       # 警示红(异常点)
     'warning': '#f97316',      # 橙色(预测功率)
-    'text': '#e2e8f0',         # 主文字
-    'text_muted': '#94a3b8',   # 次要文字
-    'grid': '#1e293b',         # 网格线
+    'text': '#111827',         # 主文字(gray-900)
+    'text_muted': '#6b7280',   # 次要文字(gray-500)
+    'grid': '#f3f4f6',         # 网格线(gray-100)
 }
 
 
 # ===== 自定义 CSS 注入 =====
 def inject_custom_css():
-    """注入自定义 CSS,实现深色科技感光伏运维仪表盘风格。"""
+    """注入自定义 CSS,实现极简白色风格(参考 skillsmp.com)。"""
     st.markdown("""
     <style>
     /* ===== 全局背景与字体 ===== */
     .stApp {
-        background: linear-gradient(135deg, #0a0e1a 0%, #0f1729 100%);
-        color: #e2e8f0;
+        background: #ffffff;
+        color: #111827;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     }
-    .stApp::before {
-        content: '';
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background:
-            radial-gradient(circle at 20% 10%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
-            radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
-        pointer-events: none;
-        z-index: 0;
-    }
-    /* 确保所有 Streamlit 内容在伪元素之上,可正常交互 */
-    .stApp > * { position: relative; z-index: 1; }
-    section[data-testid="stSidebar"] { z-index: 2; }
 
-    /* ===== 顶部标题栏 ===== */
+    /* ===== 顶部标题栏(极简,细边框) ===== */
     .main-header {
-        background: linear-gradient(90deg, rgba(245, 158, 11, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%);
-        border-left: 4px solid #f59e0b;
-        border-radius: 0 12px 12px 0;
-        padding: 20px 28px;
-        margin-bottom: 24px;
-        position: relative;
-        overflow: hidden;
-    }
-    .main-header::after {
-        content: '';
-        position: absolute;
-        top: 0; right: 0;
-        width: 200px; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.04));
+        border-bottom: 1px solid #e5e7eb;
+        padding: 8px 0 20px 0;
+        margin-bottom: 28px;
     }
     .main-header h1 {
-        font-size: 26px;
+        font-size: 36px;
         font-weight: 700;
-        margin: 0 0 6px 0;
-        color: #fbbf24;
-        letter-spacing: 0.5px;
+        margin: 0 0 8px 0;
+        color: #111827;
+        letter-spacing: -0.5px;
+        line-height: 1.2;
     }
     .main-header p {
-        font-size: 13px;
+        font-size: 14px;
         margin: 0;
-        color: #94a3b8;
+        color: #6b7280;
         line-height: 1.6;
     }
 
-    /* ===== 统计卡片 ===== */
+    /* ===== 统计卡片(白底 + 细灰边框 + 12px 圆角) ===== */
     .metric-card {
-        background: linear-gradient(135deg, #141b2d 0%, #1a2238 100%);
-        border: 1px solid #1f2940;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
         border-radius: 12px;
         padding: 20px 24px;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
+        transition: all 0.2s ease;
     }
-    .metric-card::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0;
-        width: 3px; height: 100%;
-        background: #f59e0b;
+    .metric-card:hover {
+        border-color: #d1d5db;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .metric-card.success::before { background: #10b981; }
-    .metric-card.warning::before { background: #f97316; }
-    .metric-card.danger::before { background: #ef4444; }
-    .metric-card.info::before { background: #3b82f6; }
     .metric-card .label {
         font-size: 12px;
-        color: #94a3b8;
+        color: #6b7280;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.8px;
         margin-bottom: 8px;
     }
     .metric-card .value {
         font-size: 28px;
         font-weight: 700;
-        color: #fbbf24;
+        color: #111827;
     }
     .metric-card.success .value { color: #10b981; }
     .metric-card.warning .value { color: #f97316; }
     .metric-card.danger .value { color: #ef4444; }
-    .metric-card.info .value { color: #60a5fa; }
+    .metric-card.info .value { color: #3b82f6; }
+    .metric-card.primary .value { color: #f59e0b; }
     .metric-card .unit {
         font-size: 14px;
         font-weight: 400;
-        color: #94a3b8;
+        color: #9ca3af;
         margin-left: 4px;
     }
 
-    /* ===== 分区标题 ===== */
+    /* ===== 分区标题(极简,细底线) ===== */
     .section-title {
         display: flex;
         align-items: center;
         gap: 10px;
-        margin: 28px 0 16px 0;
+        margin: 32px 0 16px 0;
         padding-bottom: 12px;
-        border-bottom: 1px solid #1f2940;
+        border-bottom: 1px solid #e5e7eb;
     }
     .section-title .icon {
-        font-size: 20px;
+        font-size: 18px;
     }
     .section-title .text {
         font-size: 18px;
         font-weight: 600;
-        color: #e2e8f0;
+        color: #111827;
     }
     .section-title .badge {
         font-size: 11px;
-        background: rgba(245, 158, 11, 0.15);
-        color: #fbbf24;
+        background: #f3f4f6;
+        color: #6b7280;
         padding: 2px 10px;
         border-radius: 10px;
-        border: 1px solid rgba(245, 158, 11, 0.3);
+        border: 1px solid #e5e7eb;
     }
 
-    /* ===== 诊断报告卡片 ===== */
+    /* ===== 诊断报告卡片(白底 + 细边框) ===== */
     .diagnosis-card {
-        background: linear-gradient(135deg, #141b2d 0%, #1a2238 100%);
-        border: 1px solid #1f2940;
-        border-left: 4px solid #f59e0b;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
         border-radius: 12px;
         padding: 24px 28px;
         white-space: pre-wrap;
         line-height: 1.8;
         font-size: 14px;
-        color: #cbd5e1;
-        position: relative;
+        color: #374151;
     }
     .diagnosis-card .header {
         font-size: 15px;
         font-weight: 600;
-        color: #fbbf24;
+        color: #111827;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 1px solid #1f2940;
+        border-bottom: 1px solid #e5e7eb;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -198,35 +166,34 @@ def inject_custom_css():
 
     /* ===== Streamlit 组件覆盖样式 ===== */
     .stButton > button {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: #0a0e1a;
+        background: #111827;
+        color: #ffffff;
         font-weight: 600;
-        border: none;
-        border-radius: 8px;
+        border: 1px solid #111827;
+        border-radius: 12px;
         padding: 10px 24px;
         width: 100%;
-        transition: all 0.2s;
+        transition: all 0.15s;
     }
     .stButton > button:hover {
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-        transform: translateY(-1px);
+        background: #1f2937;
+        border-color: #1f2937;
     }
 
-    /* 侧边栏 */
+    /* 侧边栏(白底 + 右边框) */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0f1729 0%, #0a0e1a 100%);
-        border-right: 1px solid #1f2940;
+        background: #ffffff;
+        border-right: 1px solid #e5e7eb;
     }
     section[data-testid="stSidebar"] .stMarkdown h1,
     section[data-testid="stSidebar"] .stMarkdown h2,
     section[data-testid="stSidebar"] .stMarkdown h3 {
-        color: #fbbf24;
+        color: #111827;
     }
 
     /* 标签与文字颜色 */
-    .stMarkdown, .stText { color: #e2e8f0; }
-    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 { color: #fbbf24; }
+    .stMarkdown, .stText { color: #111827; }
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 { color: #111827; }
 
     /* Plotly 图表背景透明 */
     .stPlotlyChart { background: transparent; }
@@ -239,52 +206,122 @@ def inject_custom_css():
     .empty-state {
         text-align: center;
         padding: 80px 20px;
-        color: #64748b;
+        color: #9ca3af;
     }
     .empty-state .icon {
-        font-size: 64px;
         margin-bottom: 20px;
-        opacity: 0.4;
+        opacity: 0.3;
+        display: flex;
+        justify-content: center;
+    }
+    .empty-state .icon svg {
+        width: 56px; height: 56px;
+        stroke: #9ca3af;
     }
     .empty-state .title {
         font-size: 20px;
-        color: #94a3b8;
+        color: #6b7280;
         margin-bottom: 8px;
     }
     .empty-state .desc {
         font-size: 14px;
-        color: #64748b;
+        color: #9ca3af;
     }
+
+    /* ===== Lucide 图标样式 ===== */
+    .section-title .icon svg,
+    .main-header .title-icon svg,
+    .diagnosis-card .header svg,
+    .sidebar-section svg {
+        width: 20px; height: 20px;
+        stroke: currentColor;
+        stroke-width: 2;
+        vertical-align: middle;
+    }
+    .section-title .icon { display: flex; align-items: center; color: #111827; }
+    .main-header .title-icon { display: inline-flex; align-items: center; color: #f59e0b; margin-right: 8px; }
+    .main-header .title-icon svg { width: 32px; height: 32px; }
+    .diagnosis-card .header svg { color: #f59e0b; margin-right: 4px; }
+    .sidebar-section { display: flex; align-items: center; gap: 8px; color: #111827; }
+    .metric-card .card-icon svg { width: 16px; height: 16px; }
     </style>
     """, unsafe_allow_html=True)
 
 
+# ===== Lucide 图标 SVG 路径(内联,不依赖 JS)=====
+LUCIDE_ICONS = {
+    'sun': '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+    'settings': '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+    'calendar': '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+    'target': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    'map-pin': '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+    'clock': '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    'zap': '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+    'bar-chart-3': '<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+    'database': '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
+    'calendar-days': '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
+    'timer': '<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
+    'trending-up': '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+    'alert-triangle': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/>',
+    'percent': '<line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+    'activity': '<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
+    'sliders-horizontal': '<line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/>',
+    'scale': '<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>',
+    'alert-octagon': '<path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86Z"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
+    'cloud-sun': '<path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/>',
+    'thermometer': '<path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>',
+    'cloud': '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>',
+    'sun-medium': '<circle cx="12" cy="12" r="4"/><path d="M12 3v1"/><path d="M12 20v1"/><path d="M3 12h1"/><path d="M20 12h1"/><path d="m18.364 5.636-.707.707"/><path d="m6.343 17.657-.707.707"/><path d="m18.364 18.364-.707-.707"/><path d="m6.343 6.343-.707-.707"/>',
+    'droplets': '<path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/>',
+    'bot': '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
+}
+
+
+def lucide_icon(name, size=20, stroke_width=2, color='currentColor'):
+    """生成 Lucide 图标的内联 SVG。"""
+    paths = LUCIDE_ICONS.get(name, '')
+    if not paths:
+        return ''
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" '
+        f'viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="{stroke_width}" '
+        f'stroke-linecap="round" stroke-linejoin="round">{paths}</svg>'
+    )
+
+
+def inject_lucide():
+    """Lucide 图标已改为内联 SVG,无需注入 JS。此函数保留为空占位。"""
+    pass
+
+
 def render_header():
     """渲染顶部标题栏。"""
-    st.markdown("""
+    sun_icon = lucide_icon("sun", size=32, color="#f59e0b")
+    st.markdown(f"""
     <div class="main-header">
-        <h1>☀️ 光伏电站智能预测与异常诊断平台</h1>
+        <h1><span class="title-icon">{sun_icon}</span>光伏电站智能预测与异常诊断平台</h1>
         <p>基于 PatchTST 深度学习模型的光伏功率预测 · Isolation Forest 异常检测 · InternLM 大模型智能诊断</p>
     </div>
     """, unsafe_allow_html=True)
 
 
-def render_metric_card(label, value, unit='', card_type='primary'):
+def render_metric_card(label, value, unit='', card_type='primary', icon=None):
     """渲染统计卡片。"""
+    icon_html = lucide_icon(icon, size=16) if icon else ''
     st.markdown(f"""
     <div class="metric-card {card_type}">
-        <div class="label">{label}</div>
+        <div class="label">{icon_html} {label}</div>
         <div class="value">{value}<span class="unit">{unit}</span></div>
     </div>
     """, unsafe_allow_html=True)
 
 
 def render_section_title(icon, text, badge=''):
-    """渲染分区标题。"""
+    """渲染分区标题。icon 参数为 Lucide 图标名。"""
     badge_html = f'<span class="badge">{badge}</span>' if badge else ''
     st.markdown(f"""
     <div class="section-title">
-        <span class="icon">{icon}</span>
+        <span class="icon">{lucide_icon(icon)}</span>
         <span class="text">{text}</span>
         {badge_html}
     </div>
@@ -292,10 +329,10 @@ def render_section_title(icon, text, badge=''):
 
 
 def render_empty_state(icon, title, desc):
-    """渲染空状态。"""
+    """渲染空状态。icon 参数为 Lucide 图标名。"""
     st.markdown(f"""
     <div class="empty-state">
-        <div class="icon">{icon}</div>
+        <div class="icon">{lucide_icon(icon, size=56, color="#9ca3af")}</div>
         <div class="title">{title}</div>
         <div class="desc">{desc}</div>
     </div>
@@ -306,7 +343,7 @@ def render_diagnosis_card(content):
     """渲染 LLM 诊断报告卡片。"""
     st.markdown(f"""
     <div class="diagnosis-card">
-        <div class="header">🤖 InternLM 智能诊断报告</div>
+        <div class="header">{lucide_icon("bot", color="#f59e0b")} InternLM 智能诊断报告</div>
         {content}
     </div>
     """, unsafe_allow_html=True)
@@ -321,27 +358,29 @@ def load_data():
     return df
 
 
-def build_dark_plotly_layout(title='', y_title='功率 (kW)'):
-    """构建深色主题的 Plotly 布局配置。"""
+def build_plotly_layout(title='', y_title='功率 (kW)'):
+    """构建浅色主题的 Plotly 布局配置(参考 skillsmp.com 极简风)。"""
     return dict(
-        title=dict(text=title, font=dict(color=THEME['text'], size=15), x=0.02),
+        title=dict(text=title, font=dict(color=THEME['text'], size=14), x=0.02),
         paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(20,27,45,0.6)',
+        plot_bgcolor='rgba(0,0,0,0)',
         font=dict(color=THEME['text'], family='system-ui'),
         xaxis=dict(
             title='时间',
             gridcolor=THEME['grid'],
             zerolinecolor=THEME['grid'],
             color=THEME['text_muted'],
+            linecolor=THEME['card_border'],
         ),
         yaxis=dict(
             title=y_title,
             gridcolor=THEME['grid'],
             zerolinecolor=THEME['grid'],
             color=THEME['text_muted'],
+            linecolor=THEME['card_border'],
         ),
         hovermode='x unified',
-        hoverlabel=dict(bgcolor=THEME['card_bg'], font_color=THEME['text']),
+        hoverlabel=dict(bgcolor='#ffffff', font_color=THEME['text'], bordercolor=THEME['card_border']),
         legend=dict(
             orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1,
             font=dict(color=THEME['text_muted']),
@@ -360,6 +399,7 @@ def main():
 
     # 注入自定义样式
     inject_custom_css()
+    inject_lucide()
     render_header()
 
     # ===== 数据加载 =====
@@ -368,7 +408,7 @@ def main():
 
     # ===== 侧边栏控制 =====
     with st.sidebar:
-        st.markdown('### ⚙️ 控制面板')
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><h3 style="margin:0;color:#111827;">控制面板</h3></div>', unsafe_allow_html=True)
         st.markdown('---')
 
         # 预测起点:日期选择器
@@ -378,7 +418,7 @@ def main():
         if default_date > max_date:
             default_date = min_date
 
-        st.markdown('#### 📅 预测起点')
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="font-weight:600;color:#111827;">预测起点</span></div>', unsafe_allow_html=True)
         selected_date = st.date_input(
             '历史窗口起始日',
             min_value=min_date,
@@ -388,7 +428,7 @@ def main():
             label_visibility='collapsed',
         )
 
-        st.markdown('#### 🎯 异常检测敏感度')
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span style="font-weight:600;color:#111827;">异常检测敏感度</span></div>', unsafe_allow_html=True)
         contamination = st.slider(
             'contamination',
             min_value=0.01,
@@ -411,43 +451,45 @@ def main():
         pred_end = df['timestamp'].iloc[start_idx + SEQ_LEN + PRED_LEN - 1]
 
         st.markdown('---')
-        st.markdown('#### 📍 窗口信息')
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span style="font-weight:600;color:#111827;">窗口信息</span></div>', unsafe_allow_html=True)
         st.markdown(
-            f"<div style='background:#141b2d; padding:12px 16px; border-radius:8px; "
-            f"border-left:3px solid #3b82f6; margin-bottom:8px; font-size:13px;'>"
-            f"<div style='color:#94a3b8; font-size:11px; margin-bottom:4px;'>历史窗口</div>"
-            f"<div style='color:#60a5fa;'>{hist_start.strftime('%Y-%m-%d %H:%M')}<br>"
+            f"<div style='background:#ffffff; padding:12px 16px; border-radius:12px; "
+            f"border:1px solid #e5e7eb; margin-bottom:8px; font-size:13px;'>"
+            f"<div style='color:#6b7280; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
+            f"<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg>历史窗口</div>"
+            f"<div style='color:#3b82f6;'>{hist_start.strftime('%Y-%m-%d %H:%M')}<br>"
             f"~ {hist_end.strftime('%Y-%m-%d %H:%M')}</div></div>",
             unsafe_allow_html=True,
         )
         st.markdown(
-            f"<div style='background:#141b2d; padding:12px 16px; border-radius:8px; "
-            f"border-left:3px solid #f59e0b; margin-bottom:8px; font-size:13px;'>"
-            f"<div style='color:#94a3b8; font-size:11px; margin-bottom:4px;'>预测时段</div>"
-            f"<div style='color:#fbbf24;'>{pred_start.strftime('%Y-%m-%d %H:%M')}<br>"
+            f"<div style='background:#ffffff; padding:12px 16px; border-radius:12px; "
+            f"border:1px solid #e5e7eb; margin-bottom:8px; font-size:13px;'>"
+            f"<div style='color:#6b7280; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
+            f"<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/></svg>预测时段</div>"
+            f"<div style='color:#f59e0b;'>{pred_start.strftime('%Y-%m-%d %H:%M')}<br>"
             f"~ {pred_end.strftime('%Y-%m-%d %H:%M')}</div></div>",
             unsafe_allow_html=True,
         )
 
         st.markdown('---')
-        run_btn = st.button('🚀 开始预测与分析', type='primary')
+        run_btn = st.button('开始预测与分析', type='primary')
 
     # ===== 未点击时:展示数据概览 =====
     if not run_btn:
-        render_section_title('📊', '数据集概览', '就绪')
+        render_section_title('bar-chart-3', '数据集概览', '就绪')
 
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            render_metric_card('数据总量', f'{n:,}', '条', 'info')
+            render_metric_card('数据总量', f'{n:,}', '条', 'info', 'database')
         with col2:
-            render_metric_card('起始时间', str(df['timestamp'].iloc[0])[:10], '', 'success')
+            render_metric_card('起始时间', str(df['timestamp'].iloc[0])[:10], '', 'success', 'calendar-days')
         with col3:
-            render_metric_card('结束时间', str(df['timestamp'].iloc[-1])[:10], '', 'success')
+            render_metric_card('结束时间', str(df['timestamp'].iloc[-1])[:10], '', 'success', 'calendar-days')
         with col4:
-            render_metric_card('采样间隔', '1', '小时', 'warning')
+            render_metric_card('采样间隔', '1', '小时', 'warning', 'timer')
 
         render_empty_state(
-            '☀️',
+            'sun',
             '等待启动预测分析',
             '请在左侧控制面板选择预测起点,点击「开始预测与分析」按钮启动智能诊断流程',
         )
@@ -463,7 +505,7 @@ def main():
     hist_y = history['y'].values.astype(float)
 
     # 2. 调用 PatchTST 预测
-    with st.spinner('⚡ PatchTST 模型预测中...'):
+    with st.spinner('PatchTST 模型预测中...'):
         try:
             predicted = predict_future(history)
         except Exception as e:
@@ -472,14 +514,14 @@ def main():
             return
 
     # 3. 异常检测
-    with st.spinner('🔍 Isolation Forest 异常检测中...'):
+    with st.spinner('Isolation Forest 异常检测中...'):
         anomaly_result = detect_anomalies(actual, predicted, contamination=contamination)
 
     # 4. 天气数据
     weather_df = future[['temperature_2m', 'cloud_cover', 'shortwave_radiation', 'relative_humidity_2m']]
 
     # 5. LLM 诊断
-    with st.spinner('🤖 InternLM 智能诊断生成中...'):
+    with st.spinner('InternLM 智能诊断生成中...'):
         diagnosis = generate_diagnosis(anomaly_result, weather_df)
 
     # ===== 关键指标概览 =====
@@ -489,21 +531,21 @@ def main():
     rmse = float(np.sqrt(np.mean((actual - predicted) ** 2)))
     mae = float(np.mean(np.abs(actual - predicted)))
 
-    render_section_title('📈', '关键指标', '实时')
+    render_section_title('trending-up', '关键指标', '实时')
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
-        render_metric_card('异常点数量', f'{n_anom}', '个', 'danger' if n_anom > 0 else 'success')
+        render_metric_card('异常点数量', f'{n_anom}', '个', 'danger' if n_anom > 0 else 'success', 'alert-triangle')
     with col2:
-        render_metric_card('异常占比', f'{anom_ratio * 100:.2f}', '%', 'danger' if anom_ratio > 0.1 else 'warning')
+        render_metric_card('异常占比', f'{anom_ratio * 100:.2f}', '%', 'danger' if anom_ratio > 0.1 else 'warning', 'percent')
     with col3:
-        render_metric_card('RMSE', f'{rmse:.4f}', '', 'info')
+        render_metric_card('RMSE', f'{rmse:.4f}', '', 'info', 'activity')
     with col4:
-        render_metric_card('MAE', f'{mae:.4f}', '', 'info')
+        render_metric_card('MAE', f'{mae:.4f}', '', 'info', 'activity')
     with col5:
-        render_metric_card('检测敏感度', f'{contamination:.2f}', '', 'warning')
+        render_metric_card('检测敏感度', f'{contamination:.2f}', '', 'warning', 'sliders-horizontal')
 
     # ===== 模块 1: 功率预测曲线 =====
-    render_section_title('🔋', '功率预测曲线', '历史 96h + 预测 24h')
+    render_section_title('zap', '功率预测曲线', '历史 96h + 预测 24h')
     fig1 = go.Figure()
     fig1.add_trace(go.Scatter(
         x=hist_ts, y=hist_y, mode='lines', name='历史功率',
@@ -526,14 +568,14 @@ def main():
         x0=future_ts[0], x1=future_ts[-1],
         fillcolor='rgba(245, 158, 11, 0.06)', layer='below', line_width=0,
     )
-    fig1.update_layout(build_dark_plotly_layout('功率预测曲线'), height=420)
+    fig1.update_layout(build_plotly_layout('功率预测曲线'), height=420)
     st.plotly_chart(fig1, use_container_width=True)
 
     # ===== 模块 2 & 3: 并排展示对比图 + 异常标记图 =====
     col_left, col_right = st.columns(2)
 
     with col_left:
-        render_section_title('⚖️', '实际 vs 预测', '对比')
+        render_section_title('scale', '实际 vs 预测', '对比')
         fig2 = go.Figure()
         fig2.add_trace(go.Scatter(
             x=future_ts, y=actual, mode='lines+markers', name='实际功率',
@@ -546,11 +588,11 @@ def main():
             line=dict(color=THEME['warning'], width=2.5, dash='dash'),
             marker=dict(size=6),
         ))
-        fig2.update_layout(build_dark_plotly_layout('实际 vs 预测对比'), height=400)
+        fig2.update_layout(build_plotly_layout('实际 vs 预测对比'), height=400)
         st.plotly_chart(fig2, use_container_width=True)
 
     with col_right:
-        render_section_title('🚨', '异常点标记', f'{n_anom} 个异常')
+        render_section_title('alert-octagon', '异常点标记', f'{n_anom} 个异常')
         fig3 = go.Figure()
         fig3.add_trace(go.Scatter(
             x=future_ts, y=actual, mode='lines+markers', name='实际功率',
@@ -571,23 +613,23 @@ def main():
                     line=dict(width=2, color=THEME['danger']),
                 ),
             ))
-        fig3.update_layout(build_dark_plotly_layout('异常点检测'), height=400)
+        fig3.update_layout(build_plotly_layout('异常点检测'), height=400)
         st.plotly_chart(fig3, use_container_width=True)
 
     # ===== 模块 4: 天气环境数据 =====
-    render_section_title('🌤️', '天气环境数据', '预测时段')
+    render_section_title('cloud-sun', '天气环境数据', '预测时段')
     col_w1, col_w2, col_w3, col_w4 = st.columns(4)
     with col_w1:
-        render_metric_card('温度', f'{weather_df["temperature_2m"].mean():.1f}', '°C', 'info')
+        render_metric_card('温度', f'{weather_df["temperature_2m"].mean():.1f}', '°C', 'info', 'thermometer')
     with col_w2:
-        render_metric_card('云量', f'{weather_df["cloud_cover"].mean():.1f}', '%', 'warning')
+        render_metric_card('云量', f'{weather_df["cloud_cover"].mean():.1f}', '%', 'warning', 'cloud')
     with col_w3:
-        render_metric_card('短波辐射', f'{weather_df["shortwave_radiation"].mean():.1f}', 'W/m²', 'primary')
+        render_metric_card('短波辐射', f'{weather_df["shortwave_radiation"].mean():.1f}', 'W/m²', 'primary', 'sun-medium')
     with col_w4:
-        render_metric_card('相对湿度', f'{weather_df["relative_humidity_2m"].mean():.1f}', '%', 'info')
+        render_metric_card('相对湿度', f'{weather_df["relative_humidity_2m"].mean():.1f}', '%', 'info', 'droplets')
 
     # ===== 模块 5: LLM 诊断报告 =====
-    render_section_title('🤖', 'LLM 智能诊断', 'InternLM')
+    render_section_title('bot', 'LLM 智能诊断', 'InternLM')
     # 将诊断文本格式化为 HTML(保留换行,转义特殊字符)
     diagnosis_html = diagnosis.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
     diagnosis_html = diagnosis_html.replace('\n', '<br>')
