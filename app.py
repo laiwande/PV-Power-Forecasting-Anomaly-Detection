@@ -29,176 +29,216 @@ SEQ_LEN = 96   # 历史窗口长度(96 小时)
 PRED_LEN = 24  # 预测长度(24 小时)
 DATA_PATH = os.path.join(BASE_DIR, 'data', 'pv_dataset.csv')
 
-# ===== 主题配色(水墨网页风,参考 chinesecoloratlas.com ink-wash-web)=====
-# 玄色打底 · 月白为字 · 朱砂红为 CTA · 墨灰为辅
+# ===== 主题配色(青花瓷器风,参考 chinesecoloratlas.com blue-white-porcelain)=====
+# 月白釉底 · 孔雀蓝为饰 · 靛蓝为焦点 · 墨色为字
 THEME = {
-    'bg': '#622A1D',           # 玄色(深色背景)
-    'card_bg': '#6B3122',      # 玄色微亮(卡片层次)
-    'card_border': '#758A99',  # 墨灰(细边框)
-    'primary': '#FF4C00',      # 朱红(主色/CTA)
-    'primary_light': '#FF6B33', # 浅朱
-    'secondary': '#758A99',    # 墨灰(历史功率)
-    'success': '#D6ECF0',      # 月白(实际功率)
-    'danger': '#FF4C00',       # 朱红(异常点)
-    'warning': '#FF4C00',      # 朱红(预测功率)
-    'text': '#D6ECF0',         # 月白(主文字)
-    'text_muted': '#758A99',   # 墨灰(次要文字)
-    'grid': 'rgba(117, 138, 153, 0.25)',  # 墨灰网格(半透)
+    'bg': '#D6ECF0',           # 月白(浅色釉面背景)
+    'card_bg': '#FFFFFF',      # 纯白(瓷胎卡片)
+    'card_border': '#A8C8DC',  # 浅孔雀蓝(细边框)
+    'primary': '#065279',      # 靛蓝(主色/CTA)
+    'primary_light': '#4994C4', # 孔雀蓝
+    'secondary': '#4994C4',    # 孔雀蓝(历史功率)
+    'success': '#50616D',      # 墨色(实际功率)
+    'danger': '#065279',       # 靛蓝(异常点/视觉焦点)
+    'warning': '#4994C4',      # 孔雀蓝(预测功率)
+    'text': '#50616D',         # 墨色(主文字)
+    'text_muted': '#7A8C95',   # 浅墨(次要文字)
+    'grid': 'rgba(80, 97, 109, 0.12)',  # 墨色网格(半透)
 }
 
 
 # ===== 自定义 CSS 注入 =====
 def inject_custom_css():
-    """注入自定义 CSS,实现水墨深色风格(参考 chinesecoloratlas.com ink-wash-web)。"""
+    """注入自定义 CSS,实现青花瓷器风格(参考 chinesecoloratlas.com blue-white-porcelain)。"""
     st.markdown("""
     <style>
-    /* ===== 全局背景与字体(玄色打底,月白为字)===== */
+    /* ===== 字体引入(衬线标题 + 无衬线正文)===== */
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+    /* ===== 全局背景与字体(月白釉面)===== */
     .stApp {
-        background: #622A1D;
-        color: #D6ECF0;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        background:
+            radial-gradient(circle at 12% 18%, rgba(73, 148, 196, 0.10) 0%, transparent 38%),
+            radial-gradient(circle at 88% 82%, rgba(6, 82, 121, 0.07) 0%, transparent 42%),
+            linear-gradient(180deg, #E8F4F8 0%, #D6ECF0 100%);
+        color: #50616D;
+        font-family: "Noto Sans SC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     }
 
-    /* ===== 顶部标题栏(墨灰底线)===== */
+    /* ===== 顶部标题栏(青花描金感)===== */
     .main-header {
-        border-bottom: 1px solid #758A99;
-        padding: 8px 0 20px 0;
+        border-bottom: 2px solid #4994C4;
+        padding: 10px 0 22px 0;
         margin-bottom: 28px;
+        position: relative;
+    }
+    .main-header::after {
+        content: "";
+        position: absolute;
+        left: 0; bottom: -2px;
+        width: 88px; height: 2px;
+        background: #065279;
     }
     .main-header h1 {
-        font-size: 36px;
+        font-family: "Noto Serif SC", serif;
+        font-size: 34px;
         font-weight: 700;
         margin: 0 0 8px 0;
-        color: #D6ECF0;
-        letter-spacing: -0.5px;
+        color: #065279;
+        letter-spacing: 1px;
         line-height: 1.2;
     }
     .main-header p {
-        font-size: 14px;
+        font-size: 13px;
         margin: 0;
-        color: #758A99;
+        color: #7A8C95;
         line-height: 1.6;
+        letter-spacing: 0.3px;
     }
 
-    /* ===== 统计卡片(玄色微亮底 + 墨灰细边框)===== */
+    /* ===== 统计卡片(瓷胎白底 + 孔雀蓝顶线)===== */
     .metric-card {
-        background: #6B3122;
-        border: 1px solid #758A99;
-        border-radius: 12px;
+        background: #FFFFFF;
+        border: 1px solid #A8C8DC;
+        border-top: 3px solid #4994C4;
+        border-radius: 4px;
         padding: 20px 24px;
-        transition: all 0.2s ease;
+        transition: all 0.25s ease;
+        box-shadow: 0 1px 3px rgba(6, 82, 121, 0.06);
     }
     .metric-card:hover {
-        border-color: #FF4C00;
-        box-shadow: 0 1px 6px rgba(0,0,0,0.25);
+        border-top-color: #065279;
+        box-shadow: 0 6px 20px rgba(6, 82, 121, 0.12);
+        transform: translateY(-2px);
     }
     .metric-card .label {
-        font-size: 12px;
-        color: #758A99;
+        font-size: 11px;
+        color: #7A8C95;
         text-transform: uppercase;
-        letter-spacing: 0.8px;
+        letter-spacing: 1.2px;
         margin-bottom: 8px;
     }
     .metric-card .value {
+        font-family: "Noto Serif SC", serif;
         font-size: 28px;
         font-weight: 700;
-        color: #D6ECF0;
+        color: #065279;
     }
-    .metric-card.success .value { color: #D6ECF0; }
-    .metric-card.warning .value { color: #FF4C00; }
-    .metric-card.danger .value { color: #FF4C00; }
-    .metric-card.info .value { color: #758A99; }
-    .metric-card.primary .value { color: #FF4C00; }
+    .metric-card.success .value { color: #50616D; }
+    .metric-card.warning .value { color: #4994C4; }
+    .metric-card.danger .value { color: #065279; }
+    .metric-card.info .value { color: #4994C4; }
+    .metric-card.primary .value { color: #065279; }
     .metric-card .unit {
         font-size: 14px;
         font-weight: 400;
-        color: #758A99;
+        color: #7A8C95;
         margin-left: 4px;
     }
 
-    /* ===== 分区标题(墨灰底线)===== */
+    /* ===== 分区标题(青花底线)===== */
     .section-title {
         display: flex;
         align-items: center;
         gap: 10px;
-        margin: 32px 0 16px 0;
+        margin: 34px 0 16px 0;
         padding-bottom: 12px;
-        border-bottom: 1px solid #758A99;
+        border-bottom: 1px solid #A8C8DC;
+        position: relative;
+    }
+    .section-title::after {
+        content: "";
+        position: absolute;
+        left: 0; bottom: -1px;
+        width: 64px; height: 2px;
+        background: #4994C4;
     }
     .section-title .icon {
         font-size: 18px;
     }
     .section-title .text {
-        font-size: 18px;
-        font-weight: 600;
-        color: #D6ECF0;
+        font-family: "Noto Serif SC", serif;
+        font-size: 19px;
+        font-weight: 700;
+        color: #065279;
+        letter-spacing: 0.5px;
     }
     .section-title .badge {
         font-size: 11px;
-        background: rgba(117, 138, 153, 0.15);
-        color: #D6ECF0;
+        background: rgba(73, 148, 196, 0.12);
+        color: #065279;
         padding: 2px 10px;
         border-radius: 10px;
-        border: 1px solid #758A99;
+        border: 1px solid #A8C8DC;
     }
 
-    /* ===== 诊断报告卡片(玄色底 + 墨灰边框)===== */
+    /* ===== 诊断报告卡片(瓷胎 + 青花描边)===== */
     .diagnosis-card {
-        background: #6B3122;
-        border: 1px solid #758A99;
-        border-radius: 12px;
+        background: #FFFFFF;
+        border: 1px solid #A8C8DC;
+        border-left: 4px solid #4994C4;
+        border-radius: 4px;
         padding: 24px 28px;
         white-space: pre-wrap;
-        line-height: 1.8;
+        line-height: 1.9;
         font-size: 14px;
-        color: #D6ECF0;
+        color: #50616D;
+        box-shadow: 0 1px 3px rgba(6, 82, 121, 0.06);
     }
     .diagnosis-card .header {
-        font-size: 15px;
-        font-weight: 600;
-        color: #D6ECF0;
+        font-family: "Noto Serif SC", serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #065279;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 1px solid #758A99;
+        border-bottom: 1px solid #A8C8DC;
         display: flex;
         align-items: center;
         gap: 8px;
+        letter-spacing: 0.5px;
     }
 
     /* ===== Streamlit 组件覆盖样式 ===== */
     .stButton > button {
-        background: #FF4C00;
+        background: #065279;
         color: #D6ECF0;
-        font-weight: 600;
-        border: 1px solid #FF4C00;
-        border-radius: 12px;
-        padding: 10px 24px;
+        font-family: "Noto Sans SC", sans-serif;
+        font-weight: 500;
+        letter-spacing: 1px;
+        border: 1px solid #065279;
+        border-radius: 4px;
+        padding: 11px 24px;
         width: 100%;
-        transition: all 0.15s;
+        transition: all 0.2s;
     }
     .stButton > button:hover {
-        background: #FF6B33;
-        border-color: #FF6B33;
+        background: #4994C4;
+        border-color: #4994C4;
+        box-shadow: 0 4px 12px rgba(6, 82, 121, 0.25);
     }
 
-    /* 侧边栏(玄色底 + 墨灰右边框) */
+    /* 侧边栏(月白底 + 孔雀蓝右边框) */
     section[data-testid="stSidebar"] {
-        background: #622A1D;
-        border-right: 1px solid #758A99;
+        background: linear-gradient(180deg, #E8F4F8 0%, #DDEFF4 100%);
+        border-right: 1px solid #A8C8DC;
     }
     section[data-testid="stSidebar"] .stMarkdown h1,
     section[data-testid="stSidebar"] .stMarkdown h2,
     section[data-testid="stSidebar"] .stMarkdown h3 {
-        color: #D6ECF0;
+        color: #065279;
     }
 
-    /* 标签与文字颜色(月白) */
-    .stMarkdown, .stText { color: #D6ECF0; }
-    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 { color: #D6ECF0; }
+    /* 标签与文字颜色(墨色) */
+    .stMarkdown, .stText { color: #50616D; }
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+        color: #065279;
+        font-family: "Noto Serif SC", serif;
+    }
 
-    /* 输入控件文字适配深色背景 */
-    .stDateInput, .stSlider, .stNumberInput, .stTextInput { color: #D6ECF0; }
-    .stDateInput label, .stSlider label, .stNumberInput label { color: #D6ECF0; }
+    /* 输入控件文字 */
+    .stDateInput, .stSlider, .stNumberInput, .stTextInput { color: #50616D; }
+    .stDateInput label, .stSlider label, .stNumberInput label { color: #50616D; }
 
     /* Plotly 图表背景透明 */
     .stPlotlyChart { background: transparent; }
@@ -211,26 +251,28 @@ def inject_custom_css():
     .empty-state {
         text-align: center;
         padding: 80px 20px;
-        color: #758A99;
+        color: #7A8C95;
     }
     .empty-state .icon {
         margin-bottom: 20px;
-        opacity: 0.5;
+        opacity: 0.45;
         display: flex;
         justify-content: center;
     }
     .empty-state .icon svg {
         width: 56px; height: 56px;
-        stroke: #758A99;
+        stroke: #4994C4;
     }
     .empty-state .title {
+        font-family: "Noto Serif SC", serif;
         font-size: 20px;
-        color: #D6ECF0;
+        color: #065279;
         margin-bottom: 8px;
+        letter-spacing: 0.5px;
     }
     .empty-state .desc {
         font-size: 14px;
-        color: #758A99;
+        color: #7A8C95;
     }
 
     /* ===== Lucide 图标样式 ===== */
@@ -243,11 +285,11 @@ def inject_custom_css():
         stroke-width: 2;
         vertical-align: middle;
     }
-    .section-title .icon { display: flex; align-items: center; color: #FF4C00; }
-    .main-header .title-icon { display: inline-flex; align-items: center; color: #FF4C00; margin-right: 8px; }
+    .section-title .icon { display: flex; align-items: center; color: #4994C4; }
+    .main-header .title-icon { display: inline-flex; align-items: center; color: #065279; margin-right: 10px; }
     .main-header .title-icon svg { width: 32px; height: 32px; }
-    .diagnosis-card .header svg { color: #FF4C00; margin-right: 4px; }
-    .sidebar-section { display: flex; align-items: center; gap: 8px; color: #D6ECF0; }
+    .diagnosis-card .header svg { color: #4994C4; margin-right: 4px; }
+    .sidebar-section { display: flex; align-items: center; gap: 8px; color: #065279; }
     .metric-card .card-icon svg { width: 16px; height: 16px; }
     </style>
     """, unsafe_allow_html=True)
@@ -348,7 +390,7 @@ def render_diagnosis_card(content):
     """渲染 LLM 诊断报告卡片。"""
     st.markdown(f"""
     <div class="diagnosis-card">
-        <div class="header">{lucide_icon("bot", color="#FF4C00")} InternLM 智能诊断报告</div>
+        <div class="header">{lucide_icon("bot", color="#4994C4")} InternLM 智能诊断报告</div>
         {content}
     </div>
     """, unsafe_allow_html=True)
@@ -423,7 +465,7 @@ def main():
         if default_date > max_date:
             default_date = min_date
 
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="font-weight:600;color:#D6ECF0;">预测起点</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="font-weight:600;color:#065279;">预测起点</span></div>', unsafe_allow_html=True)
         selected_date = st.date_input(
             '历史窗口起始日',
             min_value=min_date,
@@ -433,7 +475,7 @@ def main():
             label_visibility='collapsed',
         )
 
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span style="font-weight:600;color:#D6ECF0;">异常检测敏感度</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span style="font-weight:600;color:#065279;">异常检测敏感度</span></div>', unsafe_allow_html=True)
         contamination = st.slider(
             'contamination',
             min_value=0.01,
@@ -456,22 +498,22 @@ def main():
         pred_end = df['timestamp'].iloc[start_idx + SEQ_LEN + PRED_LEN - 1]
 
         st.markdown('---')
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span style="font-weight:600;color:#D6ECF0;">窗口信息</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span style="font-weight:600;color:#065279;">窗口信息</span></div>', unsafe_allow_html=True)
         st.markdown(
-            f"<div style='background:#6B3122; padding:12px 16px; border-radius:12px; "
-            f"border:1px solid #758A99; margin-bottom:8px; font-size:13px;'>"
-            f"<div style='color:#758A99; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
+            f"<div style='background:#FFFFFF; padding:12px 16px; border-radius:4px; "
+            f"border:1px solid #A8C8DC; border-left:3px solid #4994C4; margin-bottom:8px; font-size:13px;'>"
+            f"<div style='color:#7A8C95; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
             f"<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg>历史窗口</div>"
-            f"<div style='color:#D6ECF0;'>{hist_start.strftime('%Y-%m-%d %H:%M')}<br>"
+            f"<div style='color:#4994C4;'>{hist_start.strftime('%Y-%m-%d %H:%M')}<br>"
             f"~ {hist_end.strftime('%Y-%m-%d %H:%M')}</div></div>",
             unsafe_allow_html=True,
         )
         st.markdown(
-            f"<div style='background:#6B3122; padding:12px 16px; border-radius:12px; "
-            f"border:1px solid #758A99; margin-bottom:8px; font-size:13px;'>"
-            f"<div style='color:#758A99; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
+            f"<div style='background:#FFFFFF; padding:12px 16px; border-radius:4px; "
+            f"border:1px solid #A8C8DC; border-left:3px solid #065279; margin-bottom:8px; font-size:13px;'>"
+            f"<div style='color:#7A8C95; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
             f"<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/></svg>预测时段</div>"
-            f"<div style='color:#FF4C00;'>{pred_start.strftime('%Y-%m-%d %H:%M')}<br>"
+            f"<div style='color:#065279;'>{pred_start.strftime('%Y-%m-%d %H:%M')}<br>"
             f"~ {pred_end.strftime('%Y-%m-%d %H:%M')}</div></div>",
             unsafe_allow_html=True,
         )
@@ -571,7 +613,7 @@ def main():
     # 预测区域背景
     fig1.add_vrect(
         x0=future_ts[0], x1=future_ts[-1],
-        fillcolor='rgba(245, 158, 11, 0.06)', layer='below', line_width=0,
+        fillcolor='rgba(6, 82, 121, 0.07)', layer='below', line_width=0,
     )
     fig1.update_layout(build_plotly_layout('功率预测曲线'), height=420)
     st.plotly_chart(fig1, use_container_width=True)
@@ -586,7 +628,7 @@ def main():
             x=future_ts, y=actual, mode='lines+markers', name='实际功率',
             line=dict(color=THEME['success'], width=2.5),
             marker=dict(size=6),
-            fill='tozeroy', fillcolor='rgba(214, 236, 240, 0.08)',
+            fill='tozeroy', fillcolor='rgba(80, 97, 109, 0.10)',
         ))
         fig2.add_trace(go.Scatter(
             x=future_ts, y=predicted, mode='lines+markers', name='预测功率',
