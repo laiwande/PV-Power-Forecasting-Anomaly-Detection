@@ -29,38 +29,39 @@ SEQ_LEN = 96   # 历史窗口长度(96 小时)
 PRED_LEN = 24  # 预测长度(24 小时)
 DATA_PATH = os.path.join(BASE_DIR, 'data', 'pv_dataset.csv')
 
-# ===== 主题配色(极简白色风,参考 skillsmp.com)=====
+# ===== 主题配色(水墨网页风,参考 chinesecoloratlas.com ink-wash-web)=====
+# 玄色打底 · 月白为字 · 朱砂红为 CTA · 墨灰为辅
 THEME = {
-    'bg': '#ffffff',           # 纯白背景
-    'card_bg': '#ffffff',      # 卡片背景(白底)
-    'card_border': '#e5e7eb',  # 卡片细边框(gray-200)
-    'primary': '#f59e0b',      # 太阳能金(点缀色)
-    'primary_light': '#fbbf24', # 浅琥珀
-    'secondary': '#3b82f6',    # 蓝色(历史功率)
-    'success': '#10b981',      # 翠绿(实际功率)
-    'danger': '#ef4444',       # 警示红(异常点)
-    'warning': '#f97316',      # 橙色(预测功率)
-    'text': '#111827',         # 主文字(gray-900)
-    'text_muted': '#6b7280',   # 次要文字(gray-500)
-    'grid': '#f3f4f6',         # 网格线(gray-100)
+    'bg': '#622A1D',           # 玄色(深色背景)
+    'card_bg': '#6B3122',      # 玄色微亮(卡片层次)
+    'card_border': '#758A99',  # 墨灰(细边框)
+    'primary': '#FF4C00',      # 朱红(主色/CTA)
+    'primary_light': '#FF6B33', # 浅朱
+    'secondary': '#758A99',    # 墨灰(历史功率)
+    'success': '#D6ECF0',      # 月白(实际功率)
+    'danger': '#FF4C00',       # 朱红(异常点)
+    'warning': '#FF4C00',      # 朱红(预测功率)
+    'text': '#D6ECF0',         # 月白(主文字)
+    'text_muted': '#758A99',   # 墨灰(次要文字)
+    'grid': 'rgba(117, 138, 153, 0.25)',  # 墨灰网格(半透)
 }
 
 
 # ===== 自定义 CSS 注入 =====
 def inject_custom_css():
-    """注入自定义 CSS,实现极简白色风格(参考 skillsmp.com)。"""
+    """注入自定义 CSS,实现水墨深色风格(参考 chinesecoloratlas.com ink-wash-web)。"""
     st.markdown("""
     <style>
-    /* ===== 全局背景与字体 ===== */
+    /* ===== 全局背景与字体(玄色打底,月白为字)===== */
     .stApp {
-        background: #ffffff;
-        color: #111827;
+        background: #622A1D;
+        color: #D6ECF0;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     }
 
-    /* ===== 顶部标题栏(极简,细边框) ===== */
+    /* ===== 顶部标题栏(墨灰底线)===== */
     .main-header {
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid #758A99;
         padding: 8px 0 20px 0;
         margin-bottom: 28px;
     }
@@ -68,32 +69,32 @@ def inject_custom_css():
         font-size: 36px;
         font-weight: 700;
         margin: 0 0 8px 0;
-        color: #111827;
+        color: #D6ECF0;
         letter-spacing: -0.5px;
         line-height: 1.2;
     }
     .main-header p {
         font-size: 14px;
         margin: 0;
-        color: #6b7280;
+        color: #758A99;
         line-height: 1.6;
     }
 
-    /* ===== 统计卡片(白底 + 细灰边框 + 12px 圆角) ===== */
+    /* ===== 统计卡片(玄色微亮底 + 墨灰细边框)===== */
     .metric-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
+        background: #6B3122;
+        border: 1px solid #758A99;
         border-radius: 12px;
         padding: 20px 24px;
         transition: all 0.2s ease;
     }
     .metric-card:hover {
-        border-color: #d1d5db;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        border-color: #FF4C00;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.25);
     }
     .metric-card .label {
         font-size: 12px;
-        color: #6b7280;
+        color: #758A99;
         text-transform: uppercase;
         letter-spacing: 0.8px;
         margin-bottom: 8px;
@@ -101,28 +102,28 @@ def inject_custom_css():
     .metric-card .value {
         font-size: 28px;
         font-weight: 700;
-        color: #111827;
+        color: #D6ECF0;
     }
-    .metric-card.success .value { color: #10b981; }
-    .metric-card.warning .value { color: #f97316; }
-    .metric-card.danger .value { color: #ef4444; }
-    .metric-card.info .value { color: #3b82f6; }
-    .metric-card.primary .value { color: #f59e0b; }
+    .metric-card.success .value { color: #D6ECF0; }
+    .metric-card.warning .value { color: #FF4C00; }
+    .metric-card.danger .value { color: #FF4C00; }
+    .metric-card.info .value { color: #758A99; }
+    .metric-card.primary .value { color: #FF4C00; }
     .metric-card .unit {
         font-size: 14px;
         font-weight: 400;
-        color: #9ca3af;
+        color: #758A99;
         margin-left: 4px;
     }
 
-    /* ===== 分区标题(极简,细底线) ===== */
+    /* ===== 分区标题(墨灰底线)===== */
     .section-title {
         display: flex;
         align-items: center;
         gap: 10px;
         margin: 32px 0 16px 0;
         padding-bottom: 12px;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid #758A99;
     }
     .section-title .icon {
         font-size: 18px;
@@ -130,35 +131,35 @@ def inject_custom_css():
     .section-title .text {
         font-size: 18px;
         font-weight: 600;
-        color: #111827;
+        color: #D6ECF0;
     }
     .section-title .badge {
         font-size: 11px;
-        background: #f3f4f6;
-        color: #6b7280;
+        background: rgba(117, 138, 153, 0.15);
+        color: #D6ECF0;
         padding: 2px 10px;
         border-radius: 10px;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #758A99;
     }
 
-    /* ===== 诊断报告卡片(白底 + 细边框) ===== */
+    /* ===== 诊断报告卡片(玄色底 + 墨灰边框)===== */
     .diagnosis-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
+        background: #6B3122;
+        border: 1px solid #758A99;
         border-radius: 12px;
         padding: 24px 28px;
         white-space: pre-wrap;
         line-height: 1.8;
         font-size: 14px;
-        color: #374151;
+        color: #D6ECF0;
     }
     .diagnosis-card .header {
         font-size: 15px;
         font-weight: 600;
-        color: #111827;
+        color: #D6ECF0;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid #758A99;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -166,34 +167,38 @@ def inject_custom_css():
 
     /* ===== Streamlit 组件覆盖样式 ===== */
     .stButton > button {
-        background: #111827;
-        color: #ffffff;
+        background: #FF4C00;
+        color: #D6ECF0;
         font-weight: 600;
-        border: 1px solid #111827;
+        border: 1px solid #FF4C00;
         border-radius: 12px;
         padding: 10px 24px;
         width: 100%;
         transition: all 0.15s;
     }
     .stButton > button:hover {
-        background: #1f2937;
-        border-color: #1f2937;
+        background: #FF6B33;
+        border-color: #FF6B33;
     }
 
-    /* 侧边栏(白底 + 右边框) */
+    /* 侧边栏(玄色底 + 墨灰右边框) */
     section[data-testid="stSidebar"] {
-        background: #ffffff;
-        border-right: 1px solid #e5e7eb;
+        background: #622A1D;
+        border-right: 1px solid #758A99;
     }
     section[data-testid="stSidebar"] .stMarkdown h1,
     section[data-testid="stSidebar"] .stMarkdown h2,
     section[data-testid="stSidebar"] .stMarkdown h3 {
-        color: #111827;
+        color: #D6ECF0;
     }
 
-    /* 标签与文字颜色 */
-    .stMarkdown, .stText { color: #111827; }
-    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 { color: #111827; }
+    /* 标签与文字颜色(月白) */
+    .stMarkdown, .stText { color: #D6ECF0; }
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 { color: #D6ECF0; }
+
+    /* 输入控件文字适配深色背景 */
+    .stDateInput, .stSlider, .stNumberInput, .stTextInput { color: #D6ECF0; }
+    .stDateInput label, .stSlider label, .stNumberInput label { color: #D6ECF0; }
 
     /* Plotly 图表背景透明 */
     .stPlotlyChart { background: transparent; }
@@ -206,26 +211,26 @@ def inject_custom_css():
     .empty-state {
         text-align: center;
         padding: 80px 20px;
-        color: #9ca3af;
+        color: #758A99;
     }
     .empty-state .icon {
         margin-bottom: 20px;
-        opacity: 0.3;
+        opacity: 0.5;
         display: flex;
         justify-content: center;
     }
     .empty-state .icon svg {
         width: 56px; height: 56px;
-        stroke: #9ca3af;
+        stroke: #758A99;
     }
     .empty-state .title {
         font-size: 20px;
-        color: #6b7280;
+        color: #D6ECF0;
         margin-bottom: 8px;
     }
     .empty-state .desc {
         font-size: 14px;
-        color: #9ca3af;
+        color: #758A99;
     }
 
     /* ===== Lucide 图标样式 ===== */
@@ -238,11 +243,11 @@ def inject_custom_css():
         stroke-width: 2;
         vertical-align: middle;
     }
-    .section-title .icon { display: flex; align-items: center; color: #111827; }
-    .main-header .title-icon { display: inline-flex; align-items: center; color: #f59e0b; margin-right: 8px; }
+    .section-title .icon { display: flex; align-items: center; color: #FF4C00; }
+    .main-header .title-icon { display: inline-flex; align-items: center; color: #FF4C00; margin-right: 8px; }
     .main-header .title-icon svg { width: 32px; height: 32px; }
-    .diagnosis-card .header svg { color: #f59e0b; margin-right: 4px; }
-    .sidebar-section { display: flex; align-items: center; gap: 8px; color: #111827; }
+    .diagnosis-card .header svg { color: #FF4C00; margin-right: 4px; }
+    .sidebar-section { display: flex; align-items: center; gap: 8px; color: #D6ECF0; }
     .metric-card .card-icon svg { width: 16px; height: 16px; }
     </style>
     """, unsafe_allow_html=True)
@@ -343,7 +348,7 @@ def render_diagnosis_card(content):
     """渲染 LLM 诊断报告卡片。"""
     st.markdown(f"""
     <div class="diagnosis-card">
-        <div class="header">{lucide_icon("bot", color="#f59e0b")} InternLM 智能诊断报告</div>
+        <div class="header">{lucide_icon("bot", color="#FF4C00")} InternLM 智能诊断报告</div>
         {content}
     </div>
     """, unsafe_allow_html=True)
@@ -359,7 +364,7 @@ def load_data():
 
 
 def build_plotly_layout(title='', y_title='功率 (kW)'):
-    """构建浅色主题的 Plotly 布局配置(参考 skillsmp.com 极简风)。"""
+    """构建水墨深色主题的 Plotly 布局配置。"""
     return dict(
         title=dict(text=title, font=dict(color=THEME['text'], size=14), x=0.02),
         paper_bgcolor='rgba(0,0,0,0)',
@@ -380,7 +385,7 @@ def build_plotly_layout(title='', y_title='功率 (kW)'):
             linecolor=THEME['card_border'],
         ),
         hovermode='x unified',
-        hoverlabel=dict(bgcolor='#ffffff', font_color=THEME['text'], bordercolor=THEME['card_border']),
+        hoverlabel=dict(bgcolor=THEME['card_bg'], font_color=THEME['text'], bordercolor=THEME['card_border']),
         legend=dict(
             orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1,
             font=dict(color=THEME['text_muted']),
@@ -408,7 +413,7 @@ def main():
 
     # ===== 侧边栏控制 =====
     with st.sidebar:
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><h3 style="margin:0;color:#111827;">控制面板</h3></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><h3 style="margin:0;color:#D6ECF0;">控制面板</h3></div>', unsafe_allow_html=True)
         st.markdown('---')
 
         # 预测起点:日期选择器
@@ -418,7 +423,7 @@ def main():
         if default_date > max_date:
             default_date = min_date
 
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="font-weight:600;color:#111827;">预测起点</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="font-weight:600;color:#D6ECF0;">预测起点</span></div>', unsafe_allow_html=True)
         selected_date = st.date_input(
             '历史窗口起始日',
             min_value=min_date,
@@ -428,7 +433,7 @@ def main():
             label_visibility='collapsed',
         )
 
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span style="font-weight:600;color:#111827;">异常检测敏感度</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span style="font-weight:600;color:#D6ECF0;">异常检测敏感度</span></div>', unsafe_allow_html=True)
         contamination = st.slider(
             'contamination',
             min_value=0.01,
@@ -451,22 +456,22 @@ def main():
         pred_end = df['timestamp'].iloc[start_idx + SEQ_LEN + PRED_LEN - 1]
 
         st.markdown('---')
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span style="font-weight:600;color:#111827;">窗口信息</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span style="font-weight:600;color:#D6ECF0;">窗口信息</span></div>', unsafe_allow_html=True)
         st.markdown(
-            f"<div style='background:#ffffff; padding:12px 16px; border-radius:12px; "
-            f"border:1px solid #e5e7eb; margin-bottom:8px; font-size:13px;'>"
-            f"<div style='color:#6b7280; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
+            f"<div style='background:#6B3122; padding:12px 16px; border-radius:12px; "
+            f"border:1px solid #758A99; margin-bottom:8px; font-size:13px;'>"
+            f"<div style='color:#758A99; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
             f"<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg>历史窗口</div>"
-            f"<div style='color:#3b82f6;'>{hist_start.strftime('%Y-%m-%d %H:%M')}<br>"
+            f"<div style='color:#D6ECF0;'>{hist_start.strftime('%Y-%m-%d %H:%M')}<br>"
             f"~ {hist_end.strftime('%Y-%m-%d %H:%M')}</div></div>",
             unsafe_allow_html=True,
         )
         st.markdown(
-            f"<div style='background:#ffffff; padding:12px 16px; border-radius:12px; "
-            f"border:1px solid #e5e7eb; margin-bottom:8px; font-size:13px;'>"
-            f"<div style='color:#6b7280; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
+            f"<div style='background:#6B3122; padding:12px 16px; border-radius:12px; "
+            f"border:1px solid #758A99; margin-bottom:8px; font-size:13px;'>"
+            f"<div style='color:#758A99; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
             f"<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/></svg>预测时段</div>"
-            f"<div style='color:#f59e0b;'>{pred_start.strftime('%Y-%m-%d %H:%M')}<br>"
+            f"<div style='color:#FF4C00;'>{pred_start.strftime('%Y-%m-%d %H:%M')}<br>"
             f"~ {pred_end.strftime('%Y-%m-%d %H:%M')}</div></div>",
             unsafe_allow_html=True,
         )
@@ -581,7 +586,7 @@ def main():
             x=future_ts, y=actual, mode='lines+markers', name='实际功率',
             line=dict(color=THEME['success'], width=2.5),
             marker=dict(size=6),
-            fill='tozeroy', fillcolor='rgba(16, 185, 129, 0.08)',
+            fill='tozeroy', fillcolor='rgba(214, 236, 240, 0.08)',
         ))
         fig2.add_trace(go.Scatter(
             x=future_ts, y=predicted, mode='lines+markers', name='预测功率',
