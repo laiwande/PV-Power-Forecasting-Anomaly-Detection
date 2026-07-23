@@ -30,45 +30,39 @@ SEQ_LEN = 96   # 历史窗口长度(96 小时)
 PRED_LEN = 24  # 预测长度(24 小时)
 DATA_PATH = os.path.join(BASE_DIR, 'data', 'pv_dataset.csv')
 
-# ===== 主题配色(青花瓷器风,参考 chinesecoloratlas.com blue-white-porcelain)=====
-# 月白釉底 · 孔雀蓝为饰 · 靛蓝为焦点 · 墨色为字
+# ===== 主题配色(黑白极简风)=====
+# 纯白底 · 纯黑字 · 灰阶层次 · 红色仅用于异常焦点
 THEME = {
-    'bg': '#D6ECF0',           # 月白(浅色釉面背景)
-    'card_bg': '#FFFFFF',      # 纯白(瓷胎卡片)
-    'card_border': '#A8C8DC',  # 浅孔雀蓝(细边框)
-    'primary': '#065279',      # 靛蓝(主色/CTA)
-    'primary_light': '#4994C4', # 孔雀蓝
-    'secondary': '#4994C4',    # 孔雀蓝(历史功率)
-    'success': '#50616D',      # 墨色(实际功率)
-    'danger': '#065279',       # 靛蓝(异常点/视觉焦点)
-    'warning': '#4994C4',      # 孔雀蓝(预测功率)
-    'text': '#50616D',         # 墨色(主文字)
-    'text_muted': '#7A8C95',   # 浅墨(次要文字)
-    'grid': 'rgba(80, 97, 109, 0.12)',  # 墨色网格(半透)
+    'bg': '#F5F5F5',           # 浅灰(页面背景)
+    'card_bg': '#FFFFFF',      # 纯白(卡片)
+    'card_border': '#E0E0E0',  # 浅灰(细边框)
+    'primary': '#111111',      # 纯黑(主色/CTA)
+    'primary_light': '#444444', # 深灰
+    'secondary': '#888888',    # 中灰(历史功率)
+    'success': '#333333',      # 深灰(实际功率)
+    'danger': '#CC0000',       # 红色(异常点/视觉焦点)
+    'warning': '#666666',      # 中灰(预测功率)
+    'text': '#222222',         # 近黑(主文字)
+    'text_muted': '#999999',   # 浅灰(次要文字)
+    'grid': 'rgba(0, 0, 0, 0.08)',  # 黑色网格(半透)
 }
 
 
 # ===== 自定义 CSS 注入 =====
 def inject_custom_css():
-    """注入自定义 CSS,实现青花瓷器风格(参考 chinesecoloratlas.com blue-white-porcelain)。"""
+    """注入自定义 CSS,实现黑白极简风格。"""
     st.markdown("""
     <style>
-    /* ===== 字体引入(衬线标题 + 无衬线正文)===== */
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
-
-    /* ===== 全局背景与字体(月白釉面)===== */
+    /* ===== 全局背景与字体 ===== */
     .stApp {
-        background:
-            radial-gradient(circle at 12% 18%, rgba(73, 148, 196, 0.10) 0%, transparent 38%),
-            radial-gradient(circle at 88% 82%, rgba(6, 82, 121, 0.07) 0%, transparent 42%),
-            linear-gradient(180deg, #E8F4F8 0%, #D6ECF0 100%);
-        color: #50616D;
-        font-family: "Noto Sans SC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        background: #F5F5F5;
+        color: #222222;
+        font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
     }
 
-    /* ===== 顶部标题栏(青花描金感)===== */
+    /* ===== 顶部标题栏 ===== */
     .main-header {
-        border-bottom: 2px solid #4994C4;
+        border-bottom: 2px solid #111111;
         padding: 10px 0 22px 0;
         margin-bottom: 28px;
         position: relative;
@@ -77,123 +71,118 @@ def inject_custom_css():
         content: "";
         position: absolute;
         left: 0; bottom: -2px;
-        width: 88px; height: 2px;
-        background: #065279;
+        width: 60px; height: 2px;
+        background: #CC0000;
     }
     .main-header h1 {
-        font-family: "Noto Serif SC", serif;
-        font-size: 34px;
+        font-size: 30px;
         font-weight: 700;
         margin: 0 0 8px 0;
-        color: #065279;
-        letter-spacing: 1px;
+        color: #111111;
+        letter-spacing: 0.5px;
         line-height: 1.2;
     }
     .main-header p {
         font-size: 13px;
         margin: 0;
-        color: #7A8C95;
+        color: #999999;
         line-height: 1.6;
-        letter-spacing: 0.3px;
     }
 
-    /* ===== 统计卡片(瓷胎白底 + 孔雀蓝顶线)===== */
+    /* ===== 统计卡片(白底 + 黑色顶线) ===== */
     .metric-card {
         background: #FFFFFF;
-        border: 1px solid #A8C8DC;
-        border-top: 3px solid #4994C4;
+        border: 1px solid #E0E0E0;
+        border-top: 3px solid #111111;
         border-radius: 4px;
         padding: 20px 24px;
         transition: all 0.25s ease;
-        box-shadow: 0 1px 3px rgba(6, 82, 121, 0.06);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     }
     .metric-card:hover {
-        border-top-color: #065279;
-        box-shadow: 0 6px 20px rgba(6, 82, 121, 0.12);
+        border-top-color: #CC0000;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
         transform: translateY(-2px);
     }
     .metric-card .label {
         font-size: 11px;
-        color: #7A8C95;
+        color: #999999;
         text-transform: uppercase;
         letter-spacing: 1.2px;
         margin-bottom: 8px;
     }
     .metric-card .value {
-        font-family: "Noto Serif SC", serif;
         font-size: 28px;
         font-weight: 700;
-        color: #065279;
+        color: #111111;
     }
-    .metric-card.success .value { color: #50616D; }
-    .metric-card.warning .value { color: #4994C4; }
-    .metric-card.danger .value { color: #065279; }
-    .metric-card.info .value { color: #4994C4; }
-    .metric-card.primary .value { color: #065279; }
+    .metric-card.success .value { color: #333333; }
+    .metric-card.warning .value { color: #666666; }
+    .metric-card.danger .value { color: #CC0000; }
+    .metric-card.info .value { color: #444444; }
+    .metric-card.primary .value { color: #111111; }
     .metric-card .unit {
         font-size: 14px;
         font-weight: 400;
-        color: #7A8C95;
+        color: #999999;
         margin-left: 4px;
     }
 
-    /* ===== 分区标题(青花底线)===== */
+    /* ===== 分区标题 ===== */
     .section-title {
         display: flex;
         align-items: center;
         gap: 10px;
         margin: 34px 0 16px 0;
         padding-bottom: 12px;
-        border-bottom: 1px solid #A8C8DC;
+        border-bottom: 1px solid #E0E0E0;
         position: relative;
     }
     .section-title::after {
         content: "";
         position: absolute;
         left: 0; bottom: -1px;
-        width: 64px; height: 2px;
-        background: #4994C4;
+        width: 48px; height: 2px;
+        background: #111111;
     }
     .section-title .icon {
         font-size: 18px;
     }
     .section-title .text {
-        font-family: "Noto Serif SC", serif;
         font-size: 19px;
         font-weight: 700;
-        color: #065279;
+        color: #111111;
         letter-spacing: 0.5px;
     }
     .section-title .badge {
         font-size: 11px;
-        background: rgba(73, 148, 196, 0.12);
-        color: #065279;
+        background: #F0F0F0;
+        color: #666666;
         padding: 2px 10px;
         border-radius: 10px;
-        border: 1px solid #A8C8DC;
+        border: 1px solid #E0E0E0;
     }
 
-    /* ===== 诊断报告卡片(瓷胎 + 青花描边)===== */
+    /* ===== 诊断报告卡片 ===== */
     .diagnosis-card {
         background: #FFFFFF;
-        border: 1px solid #A8C8DC;
-        border-left: 4px solid #4994C4;
+        border: 1px solid #E0E0E0;
+        border-left: 4px solid #111111;
         border-radius: 4px;
         padding: 24px 28px;
         white-space: pre-wrap;
         line-height: 1.9;
         font-size: 14px;
-        color: #50616D;
-        box-shadow: 0 1px 3px rgba(6, 82, 121, 0.06);
+        color: #333333;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     }
     .diagnosis-card .header {
-        font-family: "Noto Serif SC", serif;
         font-size: 16px;
         font-weight: 700;
-        color: #065279;
+        color: #111111;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 1px solid #A8C8DC;
+        border-bottom: 1px solid #E0E0E0;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -202,27 +191,26 @@ def inject_custom_css():
 
     /* ===== Streamlit 组件覆盖样式 ===== */
     .stButton > button {
-        background: #065279;
-        color: #D6ECF0;
-        font-family: "Noto Sans SC", sans-serif;
+        background: #111111;
+        color: #FFFFFF;
         font-weight: 500;
         letter-spacing: 1px;
-        border: 1px solid #065279;
+        border: 1px solid #111111;
         border-radius: 4px;
         padding: 11px 24px;
         width: 100%;
         transition: all 0.2s;
     }
     .stButton > button:hover {
-        background: #4994C4;
-        border-color: #4994C4;
-        box-shadow: 0 4px 12px rgba(6, 82, 121, 0.25);
+        background: #333333;
+        border-color: #333333;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.20);
     }
 
-    /* 侧边栏(月白底 + 孔雀蓝右边框,紧凑无滚动条) */
+    /* 侧边栏(浅灰底,紧凑无滚动条) */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #E8F4F8 0%, #DDEFF4 100%);
-        border-right: 1px solid #A8C8DC;
+        background: #FAFAFA;
+        border-right: 1px solid #E0E0E0;
         overflow: hidden !important;
     }
     section[data-testid="stSidebar"] > div {
@@ -232,7 +220,6 @@ def inject_custom_css():
         padding-top: 1rem !important;
         padding-bottom: 0.5rem !important;
     }
-    /* 缩小侧边栏内控件间距 */
     section[data-testid="stSidebar"] .stDateInput,
     section[data-testid="stSidebar"] .stButton,
     section[data-testid="stSidebar"] .stMarkdown {
@@ -250,11 +237,10 @@ def inject_custom_css():
     section[data-testid="stSidebar"] .stMarkdown h1,
     section[data-testid="stSidebar"] .stMarkdown h2,
     section[data-testid="stSidebar"] .stMarkdown h3 {
-        color: #065279;
+        color: #111111;
         margin-bottom: 0.3rem !important;
         font-size: 1.1rem !important;
     }
-    /* 隐藏侧边栏滚动条 */
     section[data-testid="stSidebar"]::-webkit-scrollbar {
         display: none !important;
         width: 0 !important;
@@ -264,16 +250,15 @@ def inject_custom_css():
         scrollbar-width: none !important;
     }
 
-    /* 标签与文字颜色(墨色) */
-    .stMarkdown, .stText { color: #50616D; }
+    /* 标签与文字颜色 */
+    .stMarkdown, .stText { color: #222222; }
     .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-        color: #065279;
-        font-family: "Noto Serif SC", serif;
+        color: #111111;
     }
 
     /* 输入控件文字 */
-    .stDateInput, .stSlider, .stNumberInput, .stTextInput { color: #50616D; }
-    .stDateInput label, .stSlider label, .stNumberInput label { color: #50616D; }
+    .stDateInput, .stSlider, .stNumberInput, .stTextInput { color: #222222; }
+    .stDateInput label, .stSlider label, .stNumberInput label { color: #222222; }
 
     /* Plotly 图表背景透明 */
     .stPlotlyChart { background: transparent; }
@@ -286,7 +271,7 @@ def inject_custom_css():
     .empty-state {
         text-align: center;
         padding: 80px 20px;
-        color: #7A8C95;
+        color: #999999;
     }
     .empty-state .icon {
         margin-bottom: 20px;
@@ -296,18 +281,17 @@ def inject_custom_css():
     }
     .empty-state .icon svg {
         width: 56px; height: 56px;
-        stroke: #4994C4;
+        stroke: #666666;
     }
     .empty-state .title {
-        font-family: "Noto Serif SC", serif;
         font-size: 20px;
-        color: #065279;
+        color: #111111;
         margin-bottom: 8px;
         letter-spacing: 0.5px;
     }
     .empty-state .desc {
         font-size: 14px;
-        color: #7A8C95;
+        color: #999999;
     }
 
     /* ===== Lucide 图标样式 ===== */
@@ -320,11 +304,11 @@ def inject_custom_css():
         stroke-width: 2;
         vertical-align: middle;
     }
-    .section-title .icon { display: flex; align-items: center; color: #4994C4; }
-    .main-header .title-icon { display: inline-flex; align-items: center; color: #065279; margin-right: 10px; }
+    .section-title .icon { display: flex; align-items: center; color: #666666; }
+    .main-header .title-icon { display: inline-flex; align-items: center; color: #111111; margin-right: 10px; }
     .main-header .title-icon svg { width: 32px; height: 32px; }
-    .diagnosis-card .header svg { color: #4994C4; margin-right: 4px; }
-    .sidebar-section { display: flex; align-items: center; gap: 8px; color: #065279; }
+    .diagnosis-card .header svg { color: #666666; margin-right: 4px; }
+    .sidebar-section { display: flex; align-items: center; gap: 8px; color: #111111; }
     .metric-card .card-icon svg { width: 16px; height: 16px; }
     </style>
     """, unsafe_allow_html=True)
@@ -379,7 +363,7 @@ def inject_lucide():
 
 def render_header():
     """渲染顶部标题栏。"""
-    sun_icon = lucide_icon("sun", size=32, color="#f59e0b")
+    sun_icon = lucide_icon("sun", size=32, color="#111111")
     st.markdown(f"""
     <div class="main-header">
         <h1><span class="title-icon">{sun_icon}</span>光伏电站智能预测与异常诊断平台</h1>
@@ -415,7 +399,7 @@ def render_empty_state(icon, title, desc):
     """渲染空状态。icon 参数为 Lucide 图标名。"""
     st.markdown(f"""
     <div class="empty-state">
-        <div class="icon">{lucide_icon(icon, size=56, color="#9ca3af")}</div>
+        <div class="icon">{lucide_icon(icon, size=56, color="#999999")}</div>
         <div class="title">{title}</div>
         <div class="desc">{desc}</div>
     </div>
@@ -426,17 +410,17 @@ def render_diagnosis_card(content):
     """渲染 LLM 诊断报告卡片。"""
     st.markdown(f"""
     <div class="diagnosis-card">
-        <div class="header">{lucide_icon("bot", color="#4994C4")} InternLM 智能诊断报告</div>
+        <div class="header">{lucide_icon("bot", color="#666666")} InternLM 智能诊断报告</div>
         {content}
     </div>
     """, unsafe_allow_html=True)
 
 
 def render_dispatch_card(dispatch_info):
-    """渲染运维决策卡片(青花瓷风格)。
+    """渲染运维决策卡片(黑白极简风格)。
 
     卡片包含动作名称、动作系数、紧急程度(带颜色标签)与决策依据。
-    样式:白底 #FFFFFF + 左侧 4px 靛蓝竖线 + 孔雀蓝细边框 #A8C8DC,圆角 4px。
+    样式:白底 + 左侧 4px 黑色竖线 + 浅灰细边框,圆角 4px。
     """
     if not dispatch_info:
         return
@@ -446,14 +430,14 @@ def render_dispatch_card(dispatch_info):
     urgency = dispatch_info.get('urgency', '')
     rationale = dispatch_info.get('rationale', '')
 
-    # 紧急程度颜色映射:低=孔雀蓝、中=琥珀、高=橙、紧急=红
+    # 紧急程度颜色映射:低=灰、中=深灰、高=橙、紧急=红
     urgency_color_map = {
-        '低': '#4994C4',
-        '中': '#f59e0b',
-        '高': '#f97316',
-        '紧急': '#ef4444',
+        '低': '#666666',
+        '中': '#444444',
+        '高': '#CC6600',
+        '紧急': '#CC0000',
     }
-    urgency_color = urgency_color_map.get(urgency, '#4994C4')
+    urgency_color = urgency_color_map.get(urgency, '#666666')
 
     # 系数展示(转为字符串)
     coef_str = f'{coefficient}' if coefficient != '' else ''
@@ -461,11 +445,11 @@ def render_dispatch_card(dispatch_info):
     st.markdown(f"""
     <div style="
         background:#FFFFFF;
-        border:1px solid #A8C8DC;
-        border-left:4px solid #065279;
+        border:1px solid #E0E0E0;
+        border-left:4px solid #111111;
         border-radius:4px;
         padding:20px 24px;
-        box-shadow:0 1px 3px rgba(6,82,121,0.06);
+        box-shadow:0 1px 3px rgba(0,0,0,0.06);
         margin-bottom:16px;
     ">
         <div style="
@@ -474,41 +458,38 @@ def render_dispatch_card(dispatch_info):
             gap:8px;
             margin-bottom:14px;
             padding-bottom:10px;
-            border-bottom:1px solid #A8C8DC;
+            border-bottom:1px solid #E0E0E0;
         ">
-            <span style="display:inline-flex;align-items:center;color:#4994C4;">
-                {lucide_icon('alert-octagon', size=20, color='#4994C4')}
+            <span style="display:inline-flex;align-items:center;color:#666666;">
+                {lucide_icon('alert-octagon', size=20, color='#666666')}
             </span>
             <span style="
-                font-family:'Noto Serif SC', serif;
                 font-size:16px;
                 font-weight:700;
-                color:#065279;
+                color:#111111;
                 letter-spacing:0.5px;
             ">运维决策建议</span>
         </div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
             <div style="flex:0 0 auto;">
-                <div style="font-size:11px;color:#7A8C95;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">动作名称</div>
+                <div style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">动作名称</div>
                 <div style="
-                    font-family:'Noto Serif SC', serif;
                     font-size:26px;
                     font-weight:700;
-                    color:#065279;
+                    color:#111111;
                     line-height:1.2;
                 ">{action_name}</div>
             </div>
             <div style="flex:0 0 auto;">
-                <div style="font-size:11px;color:#7A8C95;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">动作系数</div>
+                <div style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">动作系数</div>
                 <div style="
-                    font-family:'Noto Serif SC', serif;
                     font-size:22px;
                     font-weight:700;
-                    color:#4994C4;
+                    color:#666666;
                 ">{coef_str}</div>
             </div>
             <div style="flex:0 0 auto;">
-                <div style="font-size:11px;color:#7A8C95;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">紧急程度</div>
+                <div style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">紧急程度</div>
                 <span style="
                     display:inline-block;
                     padding:4px 14px;
@@ -522,10 +503,10 @@ def render_dispatch_card(dispatch_info):
             </div>
         </div>
         <div>
-            <div style="font-size:11px;color:#7A8C95;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">决策依据</div>
+            <div style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">决策依据</div>
             <div style="
                 font-size:14px;
-                color:#50616D;
+                color:#333333;
                 line-height:1.8;
             ">{rationale}</div>
         </div>
@@ -592,7 +573,7 @@ def main():
 
     # ===== 侧边栏控制 =====
     with st.sidebar:
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><h3 style="margin:0;color:#065279;">控制面板</h3></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><h3 style="margin:0;color:#111111;">控制面板</h3></div>', unsafe_allow_html=True)
         st.markdown('---')
 
         # 预测起点:日期选择器
@@ -602,7 +583,7 @@ def main():
         if default_date > max_date:
             default_date = min_date
 
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="font-weight:600;color:#065279;">预测起点</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg><span style="font-weight:600;color:#111111;">预测起点</span></div>', unsafe_allow_html=True)
         selected_date = st.date_input(
             '历史窗口起始日',
             min_value=min_date,
@@ -612,7 +593,7 @@ def main():
             label_visibility='collapsed',
         )
 
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span style="font-weight:600;color:#065279;">异常检测敏感度</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span style="font-weight:600;color:#111111;">异常检测敏感度</span></div>', unsafe_allow_html=True)
         contamination = st.slider(
             'contamination',
             min_value=0.01,
@@ -635,22 +616,22 @@ def main():
         pred_end = df['timestamp'].iloc[start_idx + SEQ_LEN + PRED_LEN - 1]
 
         st.markdown('---')
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span style="font-weight:600;color:#065279;">窗口信息</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span style="font-weight:600;color:#111111;">窗口信息</span></div>', unsafe_allow_html=True)
         st.markdown(
             f"<div style='background:#FFFFFF; padding:12px 16px; border-radius:4px; "
-            f"border:1px solid #A8C8DC; border-left:3px solid #4994C4; margin-bottom:8px; font-size:13px;'>"
-            f"<div style='color:#7A8C95; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
+            f"border:1px solid #E0E0E0; border-left:3px solid #666666; margin-bottom:8px; font-size:13px;'>"
+            f"<div style='color:#999999; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
             f"<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><polyline points='12 6 12 12 16 14'/></svg>历史窗口</div>"
-            f"<div style='color:#4994C4;'>{hist_start.strftime('%Y-%m-%d %H:%M')}<br>"
+            f"<div style='color:#666666;'>{hist_start.strftime('%Y-%m-%d %H:%M')}<br>"
             f"~ {hist_end.strftime('%Y-%m-%d %H:%M')}</div></div>",
             unsafe_allow_html=True,
         )
         st.markdown(
             f"<div style='background:#FFFFFF; padding:12px 16px; border-radius:4px; "
-            f"border:1px solid #A8C8DC; border-left:3px solid #065279; margin-bottom:8px; font-size:13px;'>"
-            f"<div style='color:#7A8C95; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
+            f"border:1px solid #E0E0E0; border-left:3px solid #111111; margin-bottom:8px; font-size:13px;'>"
+            f"<div style='color:#999999; font-size:11px; margin-bottom:4px; display:flex;align-items:center;gap:4px;'>"
             f"<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/></svg>预测时段</div>"
-            f"<div style='color:#065279;'>{pred_start.strftime('%Y-%m-%d %H:%M')}<br>"
+            f"<div style='color:#111111;'>{pred_start.strftime('%Y-%m-%d %H:%M')}<br>"
             f"~ {pred_end.strftime('%Y-%m-%d %H:%M')}</div></div>",
             unsafe_allow_html=True,
         )
