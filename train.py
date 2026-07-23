@@ -1,4 +1,8 @@
-"""PatchTST 光伏功率预测 - 训练脚本(自行实现 PatchTST,不依赖第三方库)"""
+"""PatchTST 光伏功率预测 - 训练脚本(自行实现 PatchTST,不依赖第三方库)。
+
+含训练曲线可视化与早停机制:训练结束后生成 training_curve.png,
+直观展示 train/val loss 走势,便于判断是否过拟合。
+"""
 import os
 import pickle
 
@@ -8,6 +12,13 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import StandardScaler
+import matplotlib
+matplotlib.use('Agg')  # 无界面后端,适合脚本保存图片
+import matplotlib.pyplot as plt
+
+# 中文字体(Windows)
+plt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei']
+plt.rcParams['axes.unicode_minus'] = False
 
 # 特征工程模块(扩展特征列与构造函数)
 from features import build_features, FEATURE_COLS
@@ -175,11 +186,14 @@ def main():
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-    epochs = 20
+    epochs = 50          # 最大轮数(有早停兜底,设大点无妨)
+    patience = 5         # 早停耐心:验证loss连续 patience 轮不降就停止
     best_val = float('inf')
-    last_train, last_val = float('inf'), float('inf')
+    best_state = None    # 保存最优模型权重(验证loss最低时)
+    patience_counter = 0
+    train_history, val_history = [], []  # 记录每轮 loss,用于画曲线
 
-    # ---- 训练循环 ----
+    # ---- 训练循环(含早停)----
     for epoch in range(1, epochs + 1):
         model.train()
         train_losses = []
@@ -202,15 +216,56 @@ def main():
 
         last_train = float(np.mean(train_losses))
         last_val = float(np.mean(val_losses))
-        print(f'Epoch {epoch:02d}/{epochs}  train_loss={last_train:.6f}  val_loss={last_val:.6f}')
+        train_history.append(last_train)
+        val_history.append(last_val)
 
-        if last_val < best_val:
+        # 判断是否为当前最优
+        improved = last_val < best_val
+        marker = '✓ 最优' if improved else ''
+        print(f'Epoch {epoch:02d}/{epochs}  train_loss={last_train:.6f}  val_loss={last_val:.6f}  {marker}')
+
+        if improved:
             best_val = last_val
+            best_state = {k: v.clone() for k, v in model.state_dict().items()}  # 深拷贝最优权重
+            patience_counter = 0
+        else:
+            patience_counter += 1
+            if patience_counter >= patience:
+                print(f'⏹ 早停触发:验证loss已连续 {patience} 轮未下降,停止训练。')
+                break
 
-    # ---- 保存模型权重(只保存 state_dict)----
-    torch.save(model.state_dict(), MODEL_PATH)
-    print('模型权重已保存到', MODEL_PATH)
-    print(f'训练完成! 最终 train_loss={last_train:.6f}, val_loss={last_val:.6f}, best_val={best_val:.6f}')
+    # ---- 保存最优模型权重(而非最后一轮,避免过拟合)----
+    if best_state is not None:
+        torch.save(best_state, MODEL_PATH)
+    else:
+        torch.save(model.state_dict(), MODEL_PATH)
+    print('最优模型权重已保存到', MODEL_PATH)
+    print(f'训练完成! 共训练 {len(train_history)} 轮, best_val={best_val:.6f}')
+
+    # ---- 绘制训练曲线 ----
+    CURVE_PATH = os.path.join(BASE_DIR, 'training_curve.png')
+    fig, ax = plt.subplots(figsize=(10, 6))
+    epochs_x = range(1, len(train_history) + 1)
+    ax.plot(epochs_x, train_history, 'o-', color='#4994C4', label='训练损失 train loss', linewidth=2, markersize=5)
+    ax.plot(epochs_x, val_history, 's-', color='#065279', label='验证损失 val loss', linewidth=2, markersize=5)
+    # 标注最优点
+    best_epoch = int(np.argmin(val_history)) + 1
+    ax.axvline(x=best_epoch, color='#ef4444', linestyle='--', alpha=0.6, label=f'最优轮次 Epoch {best_epoch}')
+    ax.set_xlabel('训练轮次 Epoch', fontsize=13)
+    ax.set_ylabel('损失 Loss (MSE)', fontsize=13)
+    ax.set_title('PatchTST 训练过程 - 损失曲线', fontsize=15, fontweight='bold')
+    ax.legend(fontsize=12, loc='upper right')
+    ax.grid(True, alpha=0.3, linestyle='--')
+    # 过拟合区域提示:若验证loss末段上升,加注释
+    if len(val_history) > best_epoch:
+        ax.annotate('← 验证loss上升,出现过拟合',
+                    xy=(best_epoch, val_history[best_epoch - 1]),
+                    xytext=(best_epoch + 2, val_history[best_epoch - 1] + 0.02),
+                    fontsize=11, color='#ef4444',
+                    arrowprops=dict(arrowstyle='->', color='#ef4444', shrink=0.05))
+    plt.tight_layout()
+    plt.savefig(CURVE_PATH, dpi=150)
+    print(f'训练曲线已保存到 {CURVE_PATH}')
 
 
 if __name__ == '__main__':

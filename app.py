@@ -219,15 +219,49 @@ def inject_custom_css():
         box-shadow: 0 4px 12px rgba(6, 82, 121, 0.25);
     }
 
-    /* 侧边栏(月白底 + 孔雀蓝右边框) */
+    /* 侧边栏(月白底 + 孔雀蓝右边框,紧凑无滚动条) */
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #E8F4F8 0%, #DDEFF4 100%);
         border-right: 1px solid #A8C8DC;
+        overflow: hidden !important;
+    }
+    section[data-testid="stSidebar"] > div {
+        overflow: hidden !important;
+    }
+    section[data-testid="stSidebar"] .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+    /* 缩小侧边栏内控件间距 */
+    section[data-testid="stSidebar"] .stDateInput,
+    section[data-testid="stSidebar"] .stButton,
+    section[data-testid="stSidebar"] .stMarkdown {
+        margin-bottom: 0.3rem !important;
+    }
+    section[data-testid="stSidebar"] .stDateInput label,
+    section[data-testid="stSidebar"] .stButton label {
+        font-size: 0.85rem !important;
+    }
+    section[data-testid="stSidebar"] .stDateInput input,
+    section[data-testid="stSidebar"] .stButton button {
+        font-size: 0.85rem !important;
+        padding: 0.3rem 0.5rem !important;
     }
     section[data-testid="stSidebar"] .stMarkdown h1,
     section[data-testid="stSidebar"] .stMarkdown h2,
     section[data-testid="stSidebar"] .stMarkdown h3 {
         color: #065279;
+        margin-bottom: 0.3rem !important;
+        font-size: 1.1rem !important;
+    }
+    /* 隐藏侧边栏滚动条 */
+    section[data-testid="stSidebar"]::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+    }
+    section[data-testid="stSidebar"] {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
     }
 
     /* 标签与文字颜色(墨色) */
@@ -558,7 +592,7 @@ def main():
 
     # ===== 侧边栏控制 =====
     with st.sidebar:
-        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><h3 style="margin:0;color:#D6ECF0;">控制面板</h3></div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-section"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><h3 style="margin:0;color:#065279;">控制面板</h3></div>', unsafe_allow_html=True)
         st.markdown('---')
 
         # 预测起点:日期选择器
