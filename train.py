@@ -142,6 +142,11 @@ def main():
     df = build_features(df)
     data = df[FEATURE_COLS].values.astype(np.float32)  # (n_samples, n_features)
 
+    # ---- 保存 16 维特征数据(供分析/可视化使用)----
+    FEATURE_PATH = os.path.join(BASE_DIR, 'data', 'pv_dataset_16features.csv')
+    df.to_csv(FEATURE_PATH, index=False)
+    print(f'16 维特征数据已保存到 {FEATURE_PATH} ({len(df)} 行 × {len(FEATURE_COLS)} 列)')
+
     # ---- 划分训练/验证集(按时间顺序,后 20% 作为验证集)----
     n_total = len(data)
     n_train = int(n_total * 0.8)
