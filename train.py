@@ -3,6 +3,7 @@
 含训练曲线可视化与早停机制:训练结束后生成 training_curve.png,
 直观展示 train/val loss 走势,便于判断是否过拟合。
 """
+import json
 import os
 import pickle
 
@@ -241,11 +242,79 @@ def main():
 
     # ---- 保存最优模型权重(而非最后一轮,避免过拟合)----
     if best_state is not None:
+        model.load_state_dict(best_state)
         torch.save(best_state, MODEL_PATH)
     else:
         torch.save(model.state_dict(), MODEL_PATH)
     print('最优模型权重已保存到', MODEL_PATH)
     print(f'训练完成! 共训练 {len(train_history)} 轮, best_val={best_val:.6f}')
+
+    # ---- 在验证集上计算详细指标并保存 ----
+    model.eval()
+    all_preds, all_targets = [], []
+    with torch.no_grad():
+        for x, y in val_loader:
+            x, y = x.to(device), y.to(device)
+            pred = model(x)
+            all_preds.append(pred.cpu().numpy())
+            all_targets.append(y.cpu().numpy())
+    all_preds = np.concatenate(all_preds, axis=0)  # (n_val_samples, pred_len)
+    all_targets = np.concatenate(all_targets, axis=0)
+
+    # 反标准化
+    preds_real = target_scaler.inverse_transform(all_preds)
+    targets_real = target_scaler.inverse_transform(all_targets)
+
+    # 计算指标
+    mae = float(np.mean(np.abs(targets_real - preds_real)))
+    rmse = float(np.sqrt(np.mean((targets_real - preds_real) ** 2)))
+    # MAPE: 只在真实值 > 0.01 时计算,避免除以接近 0 的值导致爆炸
+    mask = targets_real.flatten() > 0.01
+    if mask.any():
+        mape = float(np.mean(np.abs((targets_real.flatten()[mask] - preds_real.flatten()[mask]) / targets_real.flatten()[mask])) * 100)
+    else:
+        mape = 0.0
+    ss_res = np.sum((targets_real - preds_real) ** 2)
+    ss_tot = np.sum((targets_real - np.mean(targets_real)) ** 2)
+    r2 = float(1 - ss_res / (ss_tot + 1e-8))
+
+    # 保存训练历史 + 指标为 JSON(供前端展示)
+    HISTORY_PATH = os.path.join(MODEL_DIR, 'training_history.json')
+    history_data = {
+        'epochs': list(range(1, len(train_history) + 1)),
+        'train_loss': train_history,
+        'val_loss': val_history,
+        'best_epoch': int(np.argmin(val_history)) + 1,
+        'best_val_loss': float(best_val),
+        'metrics': {
+            'MAE': round(mae, 6),
+            'RMSE': round(rmse, 6),
+            'MAPE': round(mape, 4),
+            'R2': round(r2, 6),
+        },
+        'config': {
+            'seq_len': seq_len,
+            'pred_len': pred_len,
+            'n_features': len(FEATURE_COLS),
+            'batch_size': batch_size,
+            'd_model': 64,
+            'n_heads': 4,
+            'num_layers': 2,
+            'dropout': 0.1,
+            'patch_len': 16,
+            'stride': 8,
+            'learning_rate': 1e-3,
+            'patience': patience,
+            'train_samples': len(train_ds),
+            'val_samples': len(val_ds),
+        },
+        'val_predictions': preds_real.flatten().tolist(),
+        'val_targets': targets_real.flatten().tolist(),
+    }
+    with open(HISTORY_PATH, 'w', encoding='utf-8') as f:
+        json.dump(history_data, f, ensure_ascii=False, indent=2)
+    print(f'训练历史已保存到 {HISTORY_PATH}')
+    print(f'验证集指标: MAE={mae:.6f}  RMSE={rmse:.6f}  MAPE={mape:.2f}%  R²={r2:.6f}')
 
     # ---- 绘制训练曲线 ----
     CURVE_PATH = os.path.join(BASE_DIR, 'training_curve.png')
@@ -267,7 +336,7 @@ def main():
                     xy=(best_epoch, val_history[best_epoch - 1]),
                     xytext=(best_epoch + 2, val_history[best_epoch - 1] + 0.02),
                     fontsize=11, color='#ef4444',
-                    arrowprops=dict(arrowstyle='->', color='#ef4444', shrink=0.05))
+                    arrowprops=dict(arrowstyle='->', color='#ef4444'))
     plt.tight_layout()
     plt.savefig(CURVE_PATH, dpi=150)
     print(f'训练曲线已保存到 {CURVE_PATH}')

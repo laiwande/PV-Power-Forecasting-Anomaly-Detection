@@ -5,6 +5,7 @@
 
 UI 设计:深色科技感光伏运维仪表盘,太阳能金/琥珀色主题。
 """
+import json
 import os
 import sys
 from datetime import timedelta
@@ -29,6 +30,7 @@ from dispatch import recommend_action
 SEQ_LEN = 96   # 历史窗口长度(96 小时)
 PRED_LEN = 24  # 预测长度(24 小时)
 DATA_PATH = os.path.join(BASE_DIR, 'data', 'pv_dataset.csv')
+MODEL_DIR = os.path.join(BASE_DIR, 'models')
 
 # ===== 主题配色(黑白极简风)=====
 # 纯白底 · 纯黑字 · 灰阶层次 · 红色仅用于异常焦点
@@ -806,6 +808,155 @@ def main():
     diagnosis_html = diagnosis.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
     diagnosis_html = diagnosis_html.replace('\n', '<br>')
     render_diagnosis_card(diagnosis_html)
+
+    # ===== 模块 6: 模型评估面板 =====
+    render_section_title('bar-chart-3', '模型评估', '验证集')
+    HISTORY_PATH = os.path.join(MODEL_DIR, 'training_history.json')
+    if os.path.exists(HISTORY_PATH):
+        with open(HISTORY_PATH, 'r', encoding='utf-8') as f:
+            hist = json.load(f)
+
+        # --- 6.1 关键指标卡片 ---
+        metrics = hist['metrics']
+        col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+        with col_m1:
+            render_metric_card('MAE', f'{metrics["MAE"]:.6f}', '(平均绝对误差)', 'info', 'activity')
+        with col_m2:
+            render_metric_card('RMSE', f'{metrics["RMSE"]:.6f}', '(均方根误差)', 'info', 'activity')
+        with col_m3:
+            render_metric_card('MAPE', f'{metrics["MAPE"]:.2f}', '% (平均绝对百分比误差)', 'warning', 'percent')
+        with col_m4:
+            r2_val = metrics['R2']
+            render_metric_card('R²', f'{r2_val:.6f}', '(决定系数)', 'success' if r2_val > 0.5 else 'danger', 'trending-up')
+
+        # --- 6.2 训练曲线图 ---
+        render_section_title('trending-up', '训练损失曲线', f'最优 Epoch {hist["best_epoch"]}')
+        fig_curve = go.Figure()
+        fig_curve.add_trace(go.Scatter(
+            x=hist['epochs'], y=hist['train_loss'], mode='lines+markers', name='训练损失',
+            line=dict(color='#111111', width=2.5),
+            marker=dict(size=6, symbol='circle'),
+        ))
+        fig_curve.add_trace(go.Scatter(
+            x=hist['epochs'], y=hist['val_loss'], mode='lines+markers', name='验证损失',
+            line=dict(color='#CC0000', width=2.5, dash='dash'),
+            marker=dict(size=6, symbol='square'),
+        ))
+        # 标注最优轮次
+        fig_curve.add_vline(
+            x=hist['best_epoch'], line_dash='dot', line_color='#666666',
+            annotation_text=f'最优 Epoch {hist["best_epoch"]}',
+            annotation_position='top left',
+            annotation_font_color='#666666',
+        )
+        fig_curve.update_layout(
+            build_plotly_layout('训练过程 - 损失曲线'),
+            height=400,
+            legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
+        )
+        st.plotly_chart(fig_curve, use_container_width=True)
+
+        # --- 6.3 过拟合诊断 ---
+        train_final = hist['train_loss'][-1]
+        val_final = hist['val_loss'][-1]
+        val_best = hist['best_val_loss']
+        gap = val_final - train_final
+        overfit_sign = val_final > val_best and len(hist['val_loss']) > hist['best_epoch']
+
+        diag_col1, diag_col2, diag_col3 = st.columns(3)
+        with diag_col1:
+            status = '出现过拟合' if overfit_sign else '拟合良好'
+            color = '#CC0000' if overfit_sign else '#333333'
+            st.markdown(f"""
+            <div style="background:#FFFFFF;border:1px solid #E0E0E0;border-radius:4px;padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+                <div style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">拟合状态</div>
+                <div style="font-size:22px;font-weight:700;color:{color};">{status}</div>
+            </div>""", unsafe_allow_html=True)
+        with diag_col2:
+            st.markdown(f"""
+            <div style="background:#FFFFFF;border:1px solid #E0E0E0;border-radius:4px;padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+                <div style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">最终 Train / Val Gap</div>
+                <div style="font-size:22px;font-weight:700;color:#111111;">{gap:.6f}</div>
+            </div>""", unsafe_allow_html=True)
+        with diag_col3:
+            st.markdown(f"""
+            <div style="background:#FFFFFF;border:1px solid #E0E0E0;border-radius:4px;padding:16px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+                <div style="font-size:11px;color:#999999;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">训练轮次</div>
+                <div style="font-size:22px;font-weight:700;color:#111111;">{len(hist["epochs"])} / 50 <span style="font-size:13px;color:#999999;">(早停)</span></div>
+            </div>""", unsafe_allow_html=True)
+
+        # --- 6.4 预测 vs 实际 散点图 ---
+        render_section_title('scale', '预测 vs 实际', '验证集散点')
+        val_preds = hist['val_predictions']
+        val_targets = hist['val_targets']
+        # 取前 2000 个点避免渲染过慢
+        n_sample = min(2000, len(val_preds))
+        idx_sample = list(range(0, len(val_preds), max(1, len(val_preds) // n_sample)))[:n_sample]
+        fig_scatter = go.Figure()
+        fig_scatter.add_trace(go.Scatter(
+            x=[val_targets[i] for i in idx_sample],
+            y=[val_preds[i] for i in idx_sample],
+            mode='markers',
+            name='预测 vs 实际',
+            marker=dict(color='#111111', size=4, opacity=0.5),
+        ))
+        # 理想对角线
+        max_val = max(max(val_targets), max(val_preds))
+        fig_scatter.add_trace(go.Scatter(
+            x=[0, max_val], y=[0, max_val], mode='lines', name='理想线 y=x',
+            line=dict(color='#CC0000', width=2, dash='dash'),
+        ))
+        fig_scatter.update_layout(
+            build_plotly_layout('预测值 vs 实际值', y_title='预测功率'),
+            xaxis=dict(title='实际功率', **{k: v for k, v in build_plotly_layout()['xaxis'].items() if k != 'title'}),
+            height=420,
+        )
+        st.plotly_chart(fig_scatter, use_container_width=True)
+
+        # --- 6.5 残差分布直方图 ---
+        render_section_title('activity', '残差分布', '验证集')
+        residuals = [val_targets[i] - val_preds[i] for i in range(len(val_targets))]
+        fig_hist = go.Figure()
+        fig_hist.add_trace(go.Histogram(
+            x=residuals, nbinsx=60, name='残差分布',
+            marker=dict(color='#111111', opacity=0.7),
+        ))
+        fig_hist.add_vline(x=0, line_dash='dash', line_color='#CC0000', annotation_text='零线')
+        fig_hist.update_layout(
+            build_plotly_layout('残差分布直方图', y_title='频数'),
+            xaxis=dict(title='残差 (实际 - 预测)', **{k: v for k, v in build_plotly_layout()['xaxis'].items() if k != 'title'}),
+            height=380,
+        )
+        st.plotly_chart(fig_hist, use_container_width=True)
+
+        # --- 6.6 模型配置表 ---
+        render_section_title('settings', '模型配置', 'PatchTST')
+        cfg = hist['config']
+        cfg_df = pd.DataFrame([
+            ('历史窗口 seq_len', cfg['seq_len']),
+            ('预测窗口 pred_len', cfg['pred_len']),
+            ('特征维度 n_features', cfg['n_features']),
+            ('Batch Size', cfg['batch_size']),
+            ('d_model', cfg['d_model']),
+            ('注意力头 n_heads', cfg['n_heads']),
+            ('Transformer 层数', cfg['num_layers']),
+            ('Dropout', cfg['dropout']),
+            ('Patch 长度', cfg['patch_len']),
+            ('Patch 步长', cfg['stride']),
+            ('学习率', cfg['learning_rate']),
+            ('早停耐心', cfg['patience']),
+            ('训练样本数', f'{cfg["train_samples"]:,}'),
+            ('验证样本数', f'{cfg["val_samples"]:,}'),
+        ], columns=['参数', '值'])
+
+        st.markdown("""
+        <div style="background:#FFFFFF;border:1px solid #E0E0E0;border-radius:4px;padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+        """, unsafe_allow_html=True)
+        st.dataframe(cfg_df, use_container_width=True, hide_index=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    else:
+        st.info('训练历史文件未找到,请先运行 train.py 生成 models/training_history.json')
 
 
 if __name__ == '__main__':
